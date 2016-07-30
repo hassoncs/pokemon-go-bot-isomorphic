@@ -6,7 +6,7 @@ export class TickWorker {
   constructor({state, client}) {
     this.state = state;
     this.client = client;
-    this._elapsedTimeSinceActMs = Infinity;
+    this._elapsedTimeSinceActMs = 0;
   }
 
   getConfig() {
@@ -20,8 +20,8 @@ export class TickWorker {
 
     const {actEvery} = this.getConfig();
     if (actEvery <= this._elapsedTimeSinceActMs) {
-      this._elapsedTimeSinceActMs = 0;
       this.act();
+      this._elapsedTimeSinceActMs = 0;
     }
   }
 
@@ -68,42 +68,74 @@ export class PositionUpdateWorker extends TickWorker {
   act() {
     console.log(['PositionUpdateWorker act',]);
     const {client, state} = this;
-    const latLng = state.movement.currentLatLng;
+    const {currentLatLng, targetLatLng, speedMps} = state.movement;
 
     if (!client.endpoint) {
-      return console.log(['SKipping update, not logged in.',]);
+      return console.log(['Skipping update, not logged in.',]);
     }
 
-    const randomMeters = 10;
-    const randomizedLatLng = randomLatLng(latLng, randomMeters / 1000);
+    const distanceToTarget = distanceBetweenLatLngs(currentLatLng, targetLatLng);
+    const timeTilTarget = distanceToTarget / speedMps;
+    console.log(`Distance to target: ${distanceToTarget.toFixed(2)}m, time: ${timeTilTarget.toFixed(2)}s`);
 
-    client.playerUpdate(randomizedLatLng.lat, randomizedLatLng.lng)
-      .then(() => {
-        console.log('PLAYER UPDATE SUCCESS!', [randomizedLatLng.lat, randomizedLatLng.lng]);
-      });
+    const distTraveledMeters = speedMps * (this._elapsedTimeSinceActMs / 1000);
+    const closerLatLng = getLatLngAlong(currentLatLng, targetLatLng, distTraveledMeters / 1000);
+    state.movement.currentLatLng = closerLatLng;
+
+    const randomMeters = 8;
+    const randomizedLatLng = randomLatLng(closerLatLng, randomMeters / 1000);
+
+    // client.playerUpdate(randomizedLatLng.lat, randomizedLatLng.lng)
+    //   .then(() => {
+        console.log('New player position:', [randomizedLatLng.lat, randomizedLatLng.lng]);
+      // });
   }
 }
 
-function latLngToFeature(latLng) {
+function distanceBetweenLatLngs(latLngA, latLngB) {
+  const featureA = latLngToFeaturePoint(latLngA);
+  const featureB = latLngToFeaturePoint(latLngB);
+  return turf.distance(featureA, featureB, 'kilometers') * 1000;
+}
+
+function latLngToFeaturePoint(latLng) {
   return {
     "type": "Feature",
-    "properties": {
-      "marker-color": "#0f0"
-    },
+    "properties": {},
     "geometry": {
       "type": "Point",
-      "coordinates": [latLng.lat, latLng.lng],
+      "coordinates": [latLng.lng, latLng.lat],
+    }
+  };
+}
+
+function getLatLngAlong(sourceLatLng, destLatLng, distance) {
+  const line = latLngsToFeatureLine(sourceLatLng, destLatLng);
+  const along = turf.along(line, distance, 'kilometers');
+  return featureToLatLng(along);
+}
+
+function latLngsToFeatureLine(latLngA, latLngB) {
+  return {
+    "type": "Feature",
+    "properties": {},
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [latLngA.lng, latLngA.lat],
+        [latLngB.lng, latLngB.lat],
+      ],
     }
   };
 }
 
 function featureToLatLng(feature) {
   var coordinates = feature.geometry.coordinates;
-  return {lat: coordinates[0], lng: coordinates[1] };
+  return {lat: coordinates[1], lng: coordinates[0]};
 }
 
 function randomLatLng(latLng, distance) {
-  const feature = latLngToFeature(latLng);
+  const feature = latLngToFeaturePoint(latLng);
   const bearing = Math.random() * 360 - 180;
   const destination = turf.destination(feature, distance, bearing, 'kilometers');
   return featureToLatLng(destination);

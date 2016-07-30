@@ -9,12 +9,6 @@ import { asyncConnect } from 'redux-async-connect';
 import {isLoaded, load as loadWidgets} from 'redux/modules/widgets';
 import PokemonIcon from 'components/PokemonIcon/PokemonIcon';
 
-function pad(n, width, z) {
-  z = z || '0';
-  n = n + '';
-  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-
 @asyncConnect([{
   deferred: true,
   promise: ({store: {dispatch, getState}}) => {
@@ -42,8 +36,10 @@ export default class Home extends Component {
     const L = require('leaflet');
     const {Map, Marker, Popup, TileLayer} = require('react-leaflet');
     const styles = require('./Home.scss');
-    const playerLatLng = [37.758081, -122.403862];
     const {widgets, load} = this.props;
+    const state = widgets;
+    const playerLatLng = state.movement.currentLatLng;
+
     console.log(widgets);
     return (
       <div className={styles.home}>

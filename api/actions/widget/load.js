@@ -1,12 +1,14 @@
 const s2 = require('s2geometry-node');
 const pogobuf = require('pogobuf');
 const POGOProtos = require('node-pogo-protos');
-const { client, latLng, s2LatLng } = require('../../utils/pogoClient');
+const { client, state, s2LatLng } = require('../../utils/pogoClient');
 
 export default function load(req) {
   return new Promise((resolve, reject) => {
-    const data = {};
+    resolve(state);
+    return;
 
+    const data = {};
     const cellIDs = getCellIDs(10); // cell count
     return client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
       .then(mapObjects => {

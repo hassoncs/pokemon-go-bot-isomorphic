@@ -11,30 +11,25 @@ const s2LatLng = new s2.S2LatLng(initialLatLng.lat, initialLatLng.lng); // Botto
 
 const state = {
   movement: {
+    speedMps: 4.16, // human speed is 1.4 - 2.5
     currentLatLng: initialLatLng,
-    desiredLatLng: initialLatLng,
+    targetLatLng: { lat: 37.759531, lng: -122.404024 },
   },
   inventory: {
 
   },
   mapSummary: {
-
+    catchable_pokemons: [],
+    decimated_spawn_points: [],
+    fort_summaries: [],
+    forts: [],
+    nearby_pokemons: [],
+    spawn_points: [],
+    wild_pokemons: [],
   },
 };
 
-//   .then(() => {
-//     console.log('LOGGING SUCCESS!');
-//     const latLng = state.movement.currentLatLng;
-//     return client.playerUpdate(latLng.lat, latLng.lng)
-//   })
-//   .then(() => {
-//     const latLng = state.movement.currentLatLng;
-//     console.log('PLAYER UPDATE SUCCESS!', [latLng.lat, latLng.lng]);
-//   });
-
-
 import {
-  TickWorker,
   LoginWorker,
   PositionUpdateWorker,
 } from './workers/TickWorker';
@@ -73,8 +68,8 @@ class Bot {
 const bot = new Bot({state, client});
 bot.start();
 
-
 const pogoClient = {
+  state,
   client,
   s2LatLng,
   latLng: initialLatLng,
