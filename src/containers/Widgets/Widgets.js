@@ -25,7 +25,7 @@ import { asyncConnect } from 'redux-async-connect';
   {...widgetActions, initializeWithKey })
 export default class Widgets extends Component {
   static propTypes = {
-    widgets: PropTypes.array,
+    widgets: PropTypes.object,
     error: PropTypes.string,
     loading: PropTypes.bool,
     initializeWithKey: PropTypes.func.isRequired,
@@ -40,6 +40,7 @@ export default class Widgets extends Component {
       return () => editStart(String(widget.id));
     };
     const {widgets, error, editing, loading, load} = this.props;
+    console.log(['widgets', widgets]);
     let refreshClassName = 'fa fa-refresh';
     if (loading) {
       refreshClassName += ' fa-spin';
@@ -54,13 +55,6 @@ export default class Widgets extends Component {
           </button>
         </h1>
         <Helmet title="Widgets"/>
-        <p>
-          If you hit refresh on your browser, the data loading will take place on the server before the page is returned.
-          If you navigated here from another page, the data was fetched from the client after the route transition.
-          This uses the decorator method <code>@asyncConnect</code> with the <code>deferred: true</code> flag. To block
-          a route transition until some data is loaded, remove the <code>deffered: true</code> flag.
-          To always render before loading data, even on the server, use <code>componentDidMount</code>.
-        </p>
         <p>
           This widgets are stored in your session, so feel free to edit it and refresh.
         </p>
