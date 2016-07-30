@@ -1,11 +1,18 @@
 import React, {Component, PropTypes} from 'react';
 import {connect} from 'react-redux';
 import {Link} from 'react-router';
+import Long from 'long';
 import config from '../../config';
 import Helmet from 'react-helmet';
 import * as widgetActions from 'redux/modules/widgets';
 import { asyncConnect } from 'redux-async-connect';
 import {isLoaded, load as loadWidgets} from 'redux/modules/widgets';
+
+function pad(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
 
 @asyncConnect([{
   deferred: true,
@@ -52,17 +59,31 @@ export default class Home extends Component {
                 position={[pokemon.latitude, pokemon.longitude]}
               >
                 <Popup>
-                  <span>
-                    {pokemon.pokemon_id}
-                    <img src={require(`../../components/PokemonIcon/0${pokemon.pokemon_id}.png`)} />
-                  </span>
+                  <div>
+                    <div>{pokemon.pokemon_id}</div>
+                    <div>
+                      <img
+                        className={styles.pokemonIcon}
+                        src={require(`../../components/PokemonIcon/images/${pad(pokemon.pokemon_id, 3)}.png`)}
+                      />
+                    </div>
+                    <div>
+                      {`${new Date(new Long(
+                        pokemon.expiration_timestamp_ms.low,
+                        pokemon.expiration_timestamp_ms.high,
+                        pokemon.expiration_timestamp_ms.unsigned).toNumber()).toString()}`}
+                    </div>
+                  </div>
                 </Popup>
               </Marker>
             ))}
             {widgets && widgets.mapSummary.forts.map((fort) => (
               <Marker
                 key={fort.id}
-                icon={L.divIcon({className: styles.fortMarker})}
+                icon={L.icon({
+                  iconUrl: require(`../../components/PokemonIcon/images/pokestop.png`),
+                  className: styles.fortMarker,
+                })}
                 position={[fort.latitude, fort.longitude]}
               >
                 <Popup>

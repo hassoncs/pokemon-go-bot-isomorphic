@@ -29,10 +29,10 @@
 }
 
 .fortMarker {
-  width: 10px;
-  height: 10px;
-  border-radius: 100%;
-  background: #a2f0ff;
+  height: 40px !important;;
+  position: relative;
+  left: -28px !important;
+  top: -36px !important;;
 }
 
 .playerMarker {
@@ -47,4 +47,8 @@
   height: 10px;
   border-radius: 100%;
   background: #cc9112;
+}
+
+.pokemonIcon {
+  width: 40px;
 }
