@@ -7,6 +7,7 @@ import Helmet from 'react-helmet';
 import * as widgetActions from 'redux/modules/widgets';
 import { asyncConnect } from 'redux-async-connect';
 import {isLoaded, load as loadWidgets} from 'redux/modules/widgets';
+import PokemonIcon from 'components/PokemonIcon/PokemonIcon';
 
 function pad(n, width, z) {
   z = z || '0';
@@ -33,6 +34,9 @@ export default class Home extends Component {
     load: PropTypes.func.isRequired,
   };
 
+  componentDidUpdate() {
+    if (this._map) this._map.leafletElement.invalidateSize();
+  }
 
   render() {
     const L = require('leaflet');
@@ -48,7 +52,11 @@ export default class Home extends Component {
           <button onClick={load}>Load</button>
         </div>
         <div className={styles.container}>
-          <Map center={playerLatLng} zoom={16}>
+          <Map
+            center={playerLatLng}
+            zoom={16}
+            ref={(el) => this._map = el}
+          >
             <TileLayer
               url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
             />
@@ -62,10 +70,7 @@ export default class Home extends Component {
                   <div>
                     <div>{pokemon.pokemon_id}</div>
                     <div>
-                      <img
-                        className={styles.pokemonIcon}
-                        src={require(`../../components/PokemonIcon/images/${pad(pokemon.pokemon_id, 3)}.png`)}
-                      />
+                      <PokemonIcon pokemonId={pokemon.pokemon_id} />
                     </div>
                     <div>
                       {`${new Date(new Long(
