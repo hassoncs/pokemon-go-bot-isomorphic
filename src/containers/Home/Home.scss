@@ -1,10 +1,11 @@
 @import "../../theme/variables.scss";
 
+:global(.leaflet-container) {
+  height: 100%;
+}
+
 .home {
   height: 100%;
-  dd {
-    margin-bottom: 15px;
-  }
 }
 
 .container {
@@ -15,7 +16,35 @@
   top: 0;
   left: 0;
 
-  :global(.leaflet-container) {
-    height: 100%;
-  }
+}
+
+.panel {
+  width: 100px;
+  height: 100px;
+  background: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.fortMarker {
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  background: #a2f0ff;
+}
+
+.playerMarker {
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  background: #cc2727;
+}
+
+.pokemonMarker {
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  background: #cc9112;
 }
