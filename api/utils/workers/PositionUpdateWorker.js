@@ -1,6 +1,7 @@
 import TickWorker from './TickWorker';
 const pogobuf = require('pogobuf');
 const POGOProtos = require('node-pogo-protos');
+
 import {
   distanceBetweenLatLngs,
   getLatLngAlong,
@@ -46,42 +47,59 @@ export default class PositionUpdateWorker extends TickWorker {
 
       console.log(`Spinning fort with id '${fort.id}'`);
 
+      fortsHistory[targetFortId] = {
+        ...fortsHistory[targetFortId],
+        arrivedEpoch: Date.now(),
+      };
+
       client.fortDetails(fort.id, fort.latitude, fort.longitude)
         .then((details) => {
           const fortType = pogobuf.Utils.getEnumKeyByValue(POGOProtos.Map.Fort.FortType, details.type);
           console.log(`At fort '${details.name}', a ${fortType}`);
           fort.details = details;
           fort.fortType = fortType;
-          if (fort.fortType === 'Gym') return console.log('This is a gym, not spinning.');
+          if (fort.fortType === 'Gym') {
+            state.target.targetFortId = null;
+            throw 'This is a gym, not spinning.';
+          }
 
           return new Promise((resolve) => {
-            setTimeout(resolve, 10000);
+            setTimeout(resolve, 15000);
+            this.pause(15000);
+            console.log(`waiting before spinning`);
           });
         })
         .then(() => {
-          console.log(`Searching fort ${fort.details.name}`);
+          console.log(`Spinning fort ${fort.details.name}`);
           return client.fortSearch(fort.id, fort.latitude, fort.longitude);
         })
         .then((searchDetails) => {
-          if (!searchDetails) return;
+          const fortSearchResult = pogobuf.Utils.getEnumKeyByValue(
+            POGOProtos.Networking.Responses.FortSearchResponse.Result, searchDetails.result);
+
+          console.log(`*** fortSearchResult '${fortSearchResult}'`.toString().green);
+          state.target.targetFortId = null;
 
           const xp = searchDetails.experience_awarded;
-          if (!xp || searchDetails.result !== 1) return console.log(`Fort search failed, try again later :(`);
+          if (searchDetails.result === 0) return console.log(`Fort search failed, try again later :(`.toString().red);
+          if (searchDetails.result === 1) console.log(`Fort search successful!`.toString().green);
+          if (searchDetails.result === 2) return console.log(`Fort out of range!`.toString().red);
+          if (searchDetails.result === 3) return console.log(`Fort on cooldown!`.toString().red);
+          if (searchDetails.result === 4) console.log(`Fort search successful, but inventory is full!`.toString().green);
 
           const items = searchDetails.items_awarded.map((item) => {
             const name = pogobuf.Utils.getEnumKeyByValue(POGOProtos.Inventory.Item.ItemId, item.item_id);
             return {name, count: item.item_count};
           });
-          const last = { xp, items };
-          state.mapSummary.target.last = last;
-          console.log(`Done Searching fort ${fort.details.name}`, last);
+          const last = {xp, items};
+          state.target.last = last;
+          console.log(`Done Spinning fort ${fort.details.name}`, last);
+          state.target.targetFortId = null;
+        })
+        .catch((error) => {
+          console.log(`Caught Fort error ${error}`);
+          state.target.targetFortId = null;
         });
-
-      fortsHistory[targetFortId] = {
-        ...fortsHistory[targetFortId],
-        arrivedEpoch: Date.now(),
-      };
-      state.target.targetFortId = null;
     }
   }
 }

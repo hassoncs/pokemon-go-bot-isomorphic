@@ -16,7 +16,7 @@ export default class PlayerUpdateWorker extends TickWorker {
     const {client, state} = this;
     const {currentLatLng} = state.movement;
 
-    const randomMeters = 4;
+    const randomMeters = 2;
     const randomizedLatLng = randomLatLng(currentLatLng, randomMeters / 1000);
 
     if (!client.endpoint || this._elapsedTimeSinceActMs === Infinity) {

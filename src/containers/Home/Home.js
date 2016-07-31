@@ -65,7 +65,7 @@ export default class Home extends Component {
         <div className={styles.container}>
           <Map
             center={playerLatLng}
-            zoom={16}
+            zoom={17}
             ref={(el) => this._map = el}
           >
             <TileLayer

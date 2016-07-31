@@ -1,5 +1,7 @@
 import TickWorker from './TickWorker';
 import sortBy from 'lodash/sortBy';
+const colors = require('colors/safe');
+
 import {
   distanceBetweenLatLngs,
   getLatLngAlong,
@@ -30,6 +32,8 @@ export default class TargetObjectiveWorker extends TickWorker {
       fort.distanceToPlayer = distanceBetweenLatLngs(currentLatLng, fortLatLng);
     });
     forts.forEach((fort) => {
+      fort.score = -fort.distanceToPlayer;
+
       const fortHistory = fortsHistory[fort.id];
       if (fortHistory) {
         const {arrivedEpoch} = fortHistory;
@@ -37,8 +41,6 @@ export default class TargetObjectiveWorker extends TickWorker {
         if (elapsedSinceArrived < POKESTOP_SPIN_WAIT * 2) {
           return fort.score = -Infinity;
         }
-      } else {
-        fort.score = -fort.distanceToPlayer;
       }
     });
 
@@ -50,7 +52,7 @@ export default class TargetObjectiveWorker extends TickWorker {
     const closestFort = sortedForts[0];
     if (!closestFort) return;
 
-    console.log(`Targeting closest fort, ${closestFort.distanceToPlayer}m away, score of ${closestFort.score}`);
+    console.log(`Targeting closest fort, ${closestFort.distanceToPlayer.toFixed(2)}m away, score of ${closestFort.score}`);
 
     // Set the target
     state.target.targetFortId = closestFort.id;
