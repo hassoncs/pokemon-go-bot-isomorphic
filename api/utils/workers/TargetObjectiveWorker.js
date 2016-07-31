@@ -11,7 +11,7 @@ const POKESTOP_SPIN_WAIT = 5 * 60 * 1000; // 5 mins
 export default class TargetObjectiveWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 2500,
+      actEvery: 10000,
     };
   }
 
@@ -34,7 +34,7 @@ export default class TargetObjectiveWorker extends TickWorker {
       if (fortHistory) {
         const {arrivedEpoch} = fortHistory;
         const elapsedSinceArrived = Date.now() - arrivedEpoch;
-        if (elapsedSinceArrived < POKESTOP_SPIN_WAIT) {
+        if (elapsedSinceArrived < POKESTOP_SPIN_WAIT * 2) {
           return fort.score = -Infinity;
         }
       } else {

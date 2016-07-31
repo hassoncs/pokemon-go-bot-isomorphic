@@ -32,11 +32,17 @@ export default class MapSummaryWorker extends TickWorker {
           nearby_pokemons: [],
           spawn_points: [],
           wild_pokemons: [],
+          fortsByIds: {}
         };
         mapObjects.map_cells.forEach((cell) => {
           Object.keys(mapSummary).forEach((key) => {
+            if (!cell[key]) return;
             mapSummary[key] = mapSummary[key].concat(cell[key]);
           });
+        });
+
+        mapSummary.forts.forEach((fort) => {
+          mapSummary.fortsByIds[fort.id] = fort;
         });
         state.mapSummary = mapSummary;
         console.log(

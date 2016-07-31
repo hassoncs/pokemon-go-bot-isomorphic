@@ -20,10 +20,11 @@ try {
 }
 
 const movement = extend({
-  speedMps: 8.16, // human speed is 1.4 - 2.5
   currentLatLng: initialLatLng,
   targetLatLng: null,
-}, prevState && prevState.movement);
+}, prevState && prevState.movement, {
+  speedMps: 4.16, // human speed is 1.4 - 2.5
+});
 
 const target = extend({
   targetFortId: null,
@@ -42,6 +43,7 @@ const state = extend({
     nearby_pokemons: [],
     spawn_points: [],
     wild_pokemons: [],
+    fortsByIds: {},
   },
 });
 

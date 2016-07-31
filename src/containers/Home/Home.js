@@ -48,6 +48,8 @@ export default class Home extends Component {
     const styles = require('./Home.scss');
     const {widgets, load} = this.props;
     const state = widgets;
+
+    if (!state) return null;
     const playerLatLng = state.movement.currentLatLng;
 
     console.log(widgets);
