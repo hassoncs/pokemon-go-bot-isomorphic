@@ -1,12 +1,23 @@
 const pogobuf = require('pogobuf');
 const login = new pogobuf.PTCLogin();
 const env = require('../../../env');
+const s2 = require('s2geometry-node');
+import jsonfile from 'jsonfile';
+import {
+  distanceBetweenLatLngs,
+  latLngToFeaturePoint,
+  getLatLngAlong,
+  latLngsToFeatureLine,
+  featureToLatLng,
+  randomLatLng,
+} from '../geo';
+const { s2LatLng } = require('../../utils/pogoClient');
 
 export class TickWorker {
   constructor({state, client}) {
     this.state = state;
     this.client = client;
-    this._elapsedTimeSinceActMs = 0;
+    this._elapsedTimeSinceActMs = Infinity;
   }
 
   getConfig() {
@@ -57,7 +68,86 @@ export class LoginWorker extends TickWorker {
 }
 
 
-import turf from 'turf';
+export class StateSaveWorker extends TickWorker {
+  getConfig() {
+    return {
+      actEvery: 1000,
+    };
+  }
+
+  act() {
+    const {state} = this;
+    const STATE_FILE_NAME = '/tmp/pogobot-state.json';
+    jsonfile.writeFile(STATE_FILE_NAME, state, function (err) {
+      if (err) console.error(['Failed to save state: ' + err,
+        state]);
+    })
+  }
+}
+
+export class MapSummaryWorker extends TickWorker {
+  getConfig() {
+    return {
+      actEvery: 10 * 1000,
+    };
+  }
+
+  act() {
+    console.log(['MapSummaryWorker act',]);
+    const {client, state} = this;
+
+    const {currentLatLng} = state.movement;
+    const cellIDs = this.getCellIDs(currentLatLng, 10); // cell count
+    return client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
+      .then(mapObjects => {
+        const mapSummary = {
+          catchable_pokemons: [],
+          decimated_spawn_points: [],
+          fort_summaries: [],
+          forts: [],
+          nearby_pokemons: [],
+          spawn_points: [],
+          wild_pokemons: [],
+        };
+        mapObjects.map_cells.forEach((cell) => {
+          Object.keys(mapSummary).forEach((key) => {
+            mapSummary[key] = mapSummary[key].concat(cell[key]);
+          });
+        });
+        state.mapSummary = mapSummary;
+        console.log(
+          `MapSummary resolved. 
+          Catchable: ${mapSummary.catchable_pokemons.length}, 
+          Forts: ${mapSummary.forts.length}`);
+      });
+  }
+
+  /**
+   * Utility method to get all the S2 Cell IDs in a given radius.
+   * Ported from https://github.com/tejado/pgoapi/blob/master/pokecli.py
+   * @param {number} radius - radius around lat lng to return cellIDs
+   * @returns {array} Array of cell Ids
+   */
+  getCellIDs(currentLatLng, radius) {
+    const s2LatLng = new s2.S2LatLng(currentLatLng.lat, currentLatLng.lng);
+    let cell = new s2.S2CellId(s2LatLng),
+      parentCell = cell.parent(15),
+      prevCell = parentCell.prev(),
+      nextCell = parentCell.next(),
+      cellIDs = [parentCell.id()];
+
+    for (var i = 0; i < radius; i++) {
+      cellIDs.unshift(prevCell.id());
+      cellIDs.push(nextCell.id());
+      prevCell = prevCell.prev();
+      nextCell = nextCell.next();
+    }
+
+    return cellIDs;
+  }
+}
+
+
 export class PositionUpdateWorker extends TickWorker {
   getConfig() {
     return {
@@ -70,7 +160,7 @@ export class PositionUpdateWorker extends TickWorker {
     const {client, state} = this;
     const {currentLatLng, targetLatLng, speedMps} = state.movement;
 
-    if (!client.endpoint) {
+    if (!client.endpoint || this._elapsedTimeSinceActMs === Infinity) {
       return console.log(['Skipping update, not logged in.',]);
     }
 
@@ -87,56 +177,26 @@ export class PositionUpdateWorker extends TickWorker {
 
     // client.playerUpdate(randomizedLatLng.lat, randomizedLatLng.lng)
     //   .then(() => {
-        console.log('New player position:', [randomizedLatLng.lat, randomizedLatLng.lng]);
-      // });
+    console.log('New player position:', [randomizedLatLng.lat, randomizedLatLng.lng]);
+    // });
   }
 }
 
-function distanceBetweenLatLngs(latLngA, latLngB) {
-  const featureA = latLngToFeaturePoint(latLngA);
-  const featureB = latLngToFeaturePoint(latLngB);
-  return turf.distance(featureA, featureB, 'kilometers') * 1000;
-}
+export class TargetObjectiveWorker extends TickWorker {
+  getConfig() {
+    return {
+      actEvery: 2500,
+    };
+  }
 
-function latLngToFeaturePoint(latLng) {
-  return {
-    "type": "Feature",
-    "properties": {},
-    "geometry": {
-      "type": "Point",
-      "coordinates": [latLng.lng, latLng.lat],
-    }
-  };
-}
+  act() {
+    console.log(['TargetObjectiveWorker act',]);
+    const {client, state} = this;
+    const {currentLatLng, targetLatLng, speedMps} = state.movement;
 
-function getLatLngAlong(sourceLatLng, destLatLng, distance) {
-  const line = latLngsToFeatureLine(sourceLatLng, destLatLng);
-  const along = turf.along(line, distance, 'kilometers');
-  return featureToLatLng(along);
-}
+    const distanceToTarget = distanceBetweenLatLngs(currentLatLng, targetLatLng);
+    const timeTilTarget = distanceToTarget / speedMps;
+    console.log(`Distance to target: ${distanceToTarget.toFixed(2)}m, time: ${timeTilTarget.toFixed(2)}s`);
 
-function latLngsToFeatureLine(latLngA, latLngB) {
-  return {
-    "type": "Feature",
-    "properties": {},
-    "geometry": {
-      "type": "LineString",
-      "coordinates": [
-        [latLngA.lng, latLngA.lat],
-        [latLngB.lng, latLngB.lat],
-      ],
-    }
-  };
-}
-
-function featureToLatLng(feature) {
-  var coordinates = feature.geometry.coordinates;
-  return {lat: coordinates[1], lng: coordinates[0]};
-}
-
-function randomLatLng(latLng, distance) {
-  const feature = latLngToFeaturePoint(latLng);
-  const bearing = Math.random() * 360 - 180;
-  const destination = turf.destination(feature, distance, bearing, 'kilometers');
-  return featureToLatLng(destination);
+  }
 }

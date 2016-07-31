@@ -1,4 +1,4 @@
-const s2 = require('s2geometry-node');
+
 const pogobuf = require('pogobuf');
 const POGOProtos = require('node-pogo-protos');
 const { client, state, s2LatLng } = require('../../utils/pogoClient');
@@ -50,25 +50,3 @@ export default function load(req) {
   });
 }
 
-/**
- * Utility method to get all the S2 Cell IDs in a given radius.
- * Ported from https://github.com/tejado/pgoapi/blob/master/pokecli.py
- * @param {number} radius - radius around lat lng to return cellIDs
- * @returns {array} Array of cell Ids
- */
-function getCellIDs(radius) {
-  let cell = new s2.S2CellId(s2LatLng),
-    parentCell = cell.parent(15),
-    prevCell = parentCell.prev(),
-    nextCell = parentCell.next(),
-    cellIDs = [parentCell.id()];
-
-  for (var i = 0; i < radius; i++) {
-    cellIDs.unshift(prevCell.id());
-    cellIDs.push(nextCell.id());
-    prevCell = prevCell.prev();
-    nextCell = nextCell.next();
-  }
-
-  return cellIDs;
-}
