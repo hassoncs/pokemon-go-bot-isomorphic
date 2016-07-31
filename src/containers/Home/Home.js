@@ -28,8 +28,18 @@ export default class Home extends Component {
     load: PropTypes.func.isRequired,
   };
 
+  componentDidMount() {
+    this._refreshInterval = setInterval(() => {
+      this.props.load();
+    }, 1000);
+  }
+
   componentDidUpdate() {
     if (this._map) this._map.leafletElement.invalidateSize();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._refreshInterval);
   }
 
   render() {
@@ -46,6 +56,9 @@ export default class Home extends Component {
         <Helmet title="Home"/>
         <div className={styles.panel}>
           <button onClick={load}>Load</button>
+
+          Heading to fort {state.target.distanceToTarget.toFixed(0)}m away.
+          ETA {state.target.timeTilTarget.toFixed(0)}s.
         </div>
         <div className={styles.container}>
           <Map
@@ -82,7 +95,8 @@ export default class Home extends Component {
               <Marker
                 key={fort.id}
                 icon={L.icon({
-                  iconUrl: require(`../../components/PokemonIcon/images/pokestop.png`),
+                  iconUrl:
+                    require(`../../components/PokemonIcon/images/pokestop${(state.target.fortsHistory[fort.id] || {}).arrivedEpoch ? '-used' : ''}.png`),
                   className: styles.fortMarker,
                 })}
                 position={[fort.latitude, fort.longitude]}

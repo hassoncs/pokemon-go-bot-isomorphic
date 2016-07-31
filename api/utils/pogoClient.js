@@ -16,36 +16,44 @@ const STATE_FILE_NAME = '/tmp/pogobot-state.json';
 let prevState = null;
 try {
   prevState = jsonfile.readFileSync(STATE_FILE_NAME, {throws: false});
-} catch (error) {}
-const movement = extend({
-    speedMps: 4.16, // human speed is 1.4 - 2.5
-    currentLatLng: initialLatLng,
-    targetLatLng: {lat: 37.759531, lng: -122.404024},
-  }, prevState && prevState.movement);
+} catch (error) {
+}
 
+const movement = extend({
+  speedMps: 8.16, // human speed is 1.4 - 2.5
+  currentLatLng: initialLatLng,
+  targetLatLng: null,
+}, prevState && prevState.movement);
+
+const target = extend({
+  targetFortId: null,
+  fortsHistory: {},
+}, prevState && prevState.target);
 
 const state = extend({
-    movement,
-    inventory: {},
-    mapSummary: {
-      catchable_pokemons: [],
-      decimated_spawn_points: [],
-      fort_summaries: [],
-      forts: [],
-      nearby_pokemons: [],
-      spawn_points: [],
-      wild_pokemons: [],
-    },
-  });
+  target,
+  movement,
+  inventory: {},
+  mapSummary: {
+    catchable_pokemons: [],
+    decimated_spawn_points: [],
+    fort_summaries: [],
+    forts: [],
+    nearby_pokemons: [],
+    spawn_points: [],
+    wild_pokemons: [],
+  },
+});
 
 const {currentLatLng} = state.movement;
-console.log(['currentLatLng',currentLatLng]);
+console.log(['currentLatLng', currentLatLng]);
 
 import {
   LoginWorker,
   PositionUpdateWorker,
   MapSummaryWorker,
   StateSaveWorker,
+  TargetObjectiveWorker,
 } from './workers/TickWorker';
 const TICK_INTERVAL = 1000;
 
@@ -65,6 +73,7 @@ class Bot {
       new PositionUpdateWorker({state, client}),
       new MapSummaryWorker({state, client}),
       new StateSaveWorker({state, client}),
+      new TargetObjectiveWorker({state, client}),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }
@@ -72,7 +81,7 @@ class Bot {
   tick() {
     const elapsedMsSinceTick = Date.now() - this._lastTickEpoch;
     this._lastTickEpoch = Date.now();
-    console.log(['tick.', elapsedMsSinceTick]);
+    // console.log(['tick.', elapsedMsSinceTick]);
 
     // Update workers
     this._workers.forEach((worker) => worker.didTick(elapsedMsSinceTick));
