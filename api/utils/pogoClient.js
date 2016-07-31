@@ -45,16 +45,11 @@ const state = extend({
   },
 });
 
-const {currentLatLng} = state.movement;
-console.log(['currentLatLng', currentLatLng]);
-
-import {
-  LoginWorker,
-  PositionUpdateWorker,
-  MapSummaryWorker,
-  StateSaveWorker,
-  TargetObjectiveWorker,
-} from './workers/TickWorker';
+import LoginWorker from './workers/LoginWorker';
+import StateSaveWorker from './workers/StateSaveWorker';
+import MapSummaryWorker from './workers/MapSummaryWorker';
+import TargetObjectiveWorker from './workers/TargetObjectiveWorker';
+import PositionUpdateWorker from './workers/PositionUpdateWorker';
 const TICK_INTERVAL = 1000;
 
 class Bot {
