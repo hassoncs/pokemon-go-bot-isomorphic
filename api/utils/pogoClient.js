@@ -52,6 +52,7 @@ import MapSummaryWorker from './workers/MapSummaryWorker';
 import TargetObjectiveWorker from './workers/TargetObjectiveWorker';
 import PlayerUpdateWorker from './workers/PlayerUpdateWorker';
 import PositionUpdateWorker from './workers/PositionUpdateWorker';
+import InventoryWorker from './workers/InventoryWorker';
 const TICK_INTERVAL = 1000;
 
 class Bot {
@@ -67,11 +68,12 @@ class Bot {
     const {state, client} = this;
     this._workers = [
       new LoginWorker({state, client}),
-      new PlayerUpdateWorker({state, client}),
-      new PositionUpdateWorker({state, client}),
-      new MapSummaryWorker({state, client}),
-      new StateSaveWorker({state, client}),
-      new TargetObjectiveWorker({state, client}),
+      // new PlayerUpdateWorker({state, client}),
+      // new PositionUpdateWorker({state, client}),
+      // new MapSummaryWorker({state, client}),
+      // new StateSaveWorker({state, client}),
+      new InventoryWorker({state, client}),
+      // new TargetObjectiveWorker({state, client}),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }

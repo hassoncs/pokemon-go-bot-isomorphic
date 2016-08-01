@@ -1,6 +1,6 @@
 import TickWorker from './TickWorker';
-const pogobuf = require('pogobuf');
-const POGOProtos = require('node-pogo-protos');
+import pogobuf from 'pogobuf';
+import POGOProtos from 'node-pogo-protos';
 
 import {
   distanceBetweenLatLngs,
@@ -24,8 +24,7 @@ export default class PositionUpdateWorker extends TickWorker {
     const {currentLatLng, targetLatLng, speedMps} = state.movement;
 
     if (!fortsByIds) return console.log(`fortsByIds isn't ready`);
-
-    if (!targetLatLng) return console.log(['At target, not moving player.',]);
+    if (!targetLatLng) return console.log('At target, not moving player.');
 
     const distanceToTarget = distanceBetweenLatLngs(currentLatLng, targetLatLng);
     const timeTilTarget = distanceToTarget / speedMps;
