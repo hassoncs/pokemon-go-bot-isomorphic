@@ -106,10 +106,11 @@ class InventoryPruner {
         if (!item) return console.log(`Player has no ${itemId}, skipping`);
 
         const itemThrowAwayCount = Math.min(item.count, throwAwayCount);
-        throwAwayCount -= itemThrowAwayCount;
-        console.log(`  Throwing away ${itemThrowAwayCount} of item type ${itemId}`);
-        throwAwayCountByItemId[itemId] = itemThrowAwayCount;
-
+        if (itemThrowAwayCount > 0) {
+          throwAwayCount -= itemThrowAwayCount;
+          console.log(`  Throwing away ${itemThrowAwayCount} of item type ${itemId}`);
+          throwAwayCountByItemId[itemId] = itemThrowAwayCount;
+        }
         //if (throwAwayCount > 0) {
         //  console.log(`Still need to throw away ${throwAwayCount} more`);
         //}

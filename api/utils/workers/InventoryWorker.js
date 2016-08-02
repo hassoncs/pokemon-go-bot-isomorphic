@@ -4,6 +4,9 @@ import POGOProtos from 'node-pogo-protos';
 import utils from '../utils';
 import logUtils from '../logUtils';
 import InventoryPruner from '../InventoryPruner';
+import async from 'async';
+
+const delayBetweenItems = 3000;
 
 export default class InventoryWorker extends TickWorker {
   getConfig() {
@@ -34,19 +37,24 @@ export default class InventoryWorker extends TickWorker {
 
         // Check if we should throw anything away..
         const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items);
-        if (Object.keys(throwAwayCountByType).length === 0) {
+        const throwAwayCountByItemId = InventoryPruner.getThrowAwayCountByItemId(items, throwAwayCountByType);
+
+        if (Object.keys(throwAwayCountByItemId).length === 0) {
           return console.log('Keeping all items, bag not full');
         }
 
-        //Object.keys(throwAwayCountByType).forEach(type => {
-        //  console.log(`Recycling ${count}` );
-        //});
+        const itemIds = Object.keys(throwAwayCountByItemId);
+        async.eachSeries(itemIds, (itemId, cb) => {
+          const count = throwAwayCountByItemId[itemId];
+          console.log(`Recycling ${count} of item ${itemId}...`);
 
-        client.recycleInventoryItem();
-
-        //items.forEach(item => {
-        //  console.log(item);
-        //});
+          this.bot.pause(delayBetweenItems);
+          client.recycleInventoryItem(itemId, count)
+            .then(response => {
+              console.log(`DONE! ${response}`);
+              setTimeout(cb, delayBetweenItems);
+            });
+        });
       });
   }
 }
