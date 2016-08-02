@@ -3,15 +3,17 @@ import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 import utils from '../utils';
 import logUtils from '../logUtils';
+import InventoryPruner from '../InventoryPruner';
 
 export default class InventoryWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 60 * 1000,
+      actEvery: 30 * 1000, // 30 seconds
     };
   }
 
   act() {
+    console.log(['InventoryWorker act',]);
     const {client, state} = this;
 
     client.getInventory(0)
@@ -29,6 +31,22 @@ export default class InventoryWorker extends TickWorker {
 
         state.inventory.items = items;
         state.inventory.itemsById = itemsById;
+
+        // Check if we should throw anything away..
+        const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items);
+        if (Object.keys(throwAwayCountByType).length === 0) {
+          return console.log('Keeping all items, bag not full');
+        }
+
+        //Object.keys(throwAwayCountByType).forEach(type => {
+        //  console.log(`Recycling ${count}` );
+        //});
+
+        client.recycleInventoryItem();
+
+        //items.forEach(item => {
+        //  console.log(item);
+        //});
       });
   }
 }
