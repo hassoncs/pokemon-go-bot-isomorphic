@@ -51,7 +51,13 @@ export default class InventoryWorker extends TickWorker {
           this.bot.pause(delayBetweenItems);
           client.recycleInventoryItem(itemId, count)
             .then(response => {
-              console.log(`DONE! ${response}`);
+              console.log(JSON.stringify(response));
+              if (response.status === 1) {
+                console.log(`Recycling item successful`.toString().green);
+                state.inventory.itemsById[itemId].count = response.new_count;
+              } else {
+                console.log(`Recycling item failed`.toString().red);
+              }
               setTimeout(cb, delayBetweenItems);
             });
         });
