@@ -25,7 +25,6 @@ export default class PokemonCatchingWorker extends TickWorker {
 
   encounterPokemon(encounter) {
     const {client, state} = this;
-    console.log(`Encountering Pokemon`);
     this.bot.pause(this.getConfig().actEvery);
     const {encounterID, spawnPointID} = encounter;
 
@@ -98,7 +97,6 @@ export default class PokemonCatchingWorker extends TickWorker {
           cb(null);
         });
     }, () => {
-      console.log(`catchReponse ${catchReponse}`);
       const {status, capture_award} = catchReponse;
       if (catchReponse === null) {
         return true;
@@ -121,7 +119,6 @@ export default class PokemonCatchingWorker extends TickWorker {
         return false;
       }
     }, () => {
-      console.log(`Done trying to catch the pokemon.`);
     });
   }
 

@@ -33,7 +33,7 @@ export default class TickWorker {
 
     const {actEvery, needsLogIn} = {...defaultConfig, ...this.getConfig()};
     if (needsLogIn && !this.state.loggedIn) {
-      return console.log(['Worker skipping tick, not logged in...',]);
+      return; // console.log(['Worker skipping tick, not logged in...',]);
     }
 
     if (actEvery <= this._elapsedTimeSinceActMs) {

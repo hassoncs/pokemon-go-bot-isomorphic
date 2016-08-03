@@ -23,11 +23,9 @@ export default class PositionUpdateWorker extends TickWorker {
   act() {
     const {state} = this;
     const {targetFortId} = state.target;
-    const {fortsByIds} = state.mapSummary;
     const {currentLatLng, targetLatLng, speedMps} = state.movement;
 
-    if (!fortsByIds) return console.log(`fortsByIds isn't ready`);
-    if (!targetFortId || !targetLatLng) return console.log('At target, not moving player.');
+    if (!targetFortId || !targetLatLng) return; // console.log('At target, not moving player.');
 
     const distanceToTarget = distanceBetweenLatLngs(currentLatLng, targetLatLng);
     const timeTilTarget = distanceToTarget / speedMps;
@@ -57,12 +55,11 @@ export default class PositionUpdateWorker extends TickWorker {
     const {client, state} = this;
     const {targetFortId, fortsHistory} = state.target;
     const {fortsByIds} = state.mapSummary;
-    console.log(`Reached target fort ${targetFortId}`);
-
     const fort = fortsByIds[targetFortId];
     if (!fort) return;
 
     console.log(`Spinning fort with id '${fort.id}'`);
+    this.bot.pause(2000);
 
     fortsHistory[targetFortId] = {
       ...fortsHistory[targetFortId],
@@ -72,7 +69,7 @@ export default class PositionUpdateWorker extends TickWorker {
     client.fortDetails(fort.id, fort.latitude, fort.longitude)
       .then((details) => {
         const fortType = pogobuf.Utils.getEnumKeyByValue(POGOProtos.Map.Fort.FortType, details.type);
-        console.log(`At ${fortType} '${details.name}'`.toString.green);
+        console.log(`At ${fortType} '${details.name}'`.toString().green);
 
         fort.details = details;
         fort.fortType = fortType;
@@ -83,7 +80,7 @@ export default class PositionUpdateWorker extends TickWorker {
 
         return new Promise((resolve) => {
           setTimeout(resolve, waitBeforeSpinningPokestop);
-          this.pause(waitBeforeSpinningPokestop);
+          this.bot.pause(waitBeforeSpinningPokestop);
         });
       })
       .then(() => {
