@@ -4,6 +4,7 @@ import jsonfile from 'jsonfile';
 export default class StateSaveWorker extends TickWorker {
   getConfig() {
     return {
+      needsLogIn: false,
       actEvery: 1000,
     };
   }

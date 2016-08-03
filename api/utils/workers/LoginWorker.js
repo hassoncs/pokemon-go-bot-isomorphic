@@ -6,6 +6,7 @@ const login = new pogobuf.PTCLogin();
 export default class LoginWorker extends TickWorker {
   getConfig() {
     return {
+      needsLogIn: false,
       actEvery: 30 * 60 * 10000, // 30 mins
     };
   }
@@ -22,6 +23,7 @@ export default class LoginWorker extends TickWorker {
       })
       .then(() => {
         console.log(['Logged in!']);
+        state.loggedIn = true;
       });
   }
 }

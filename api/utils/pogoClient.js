@@ -26,7 +26,6 @@ const movement = extend({
 });
 
 const target = extend({
-  targetFortId: null,
   fortsHistory: {},
 }, prevState && prevState.target);
 
@@ -44,6 +43,7 @@ const state = extend({
     wild_pokemons: [],
     fortsByIds: {},
   },
+  loggedIn: false,
 });
 
 import LoginWorker from './workers/LoginWorker';
@@ -68,12 +68,12 @@ class Bot {
     const {state, client} = this;
     this._workers = [
       new LoginWorker({state, client}),
-      // new PlayerUpdateWorker({state, client}),
-      // new PositionUpdateWorker({state, client}),
-      // new MapSummaryWorker({state, client}),
-      // new StateSaveWorker({state, client}),
-      new InventoryWorker({state, client}),
-      // new TargetObjectiveWorker({state, client}),
+      new PlayerUpdateWorker({state, client}),
+      new PositionUpdateWorker({state, client}),
+      new MapSummaryWorker({state, client}),
+      new StateSaveWorker({state, client}),
+      new TargetObjectiveWorker({state, client}),
+      // new InventoryWorker({state, client}),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }

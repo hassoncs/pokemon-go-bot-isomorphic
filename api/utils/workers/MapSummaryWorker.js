@@ -3,7 +3,6 @@ const s2 = require('s2geometry-node');
 import {
   distanceBetweenLatLngs,
   latLngToFeaturePoint,
-  getLatLngAlong,
   latLngsToFeatureLine,
   featureToLatLng,
   randomLatLng,
@@ -12,7 +11,7 @@ import {
 export default class MapSummaryWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 10 * 1000, // 60 seconds
+      actEvery: 50 * 1000,
     };
   }
 

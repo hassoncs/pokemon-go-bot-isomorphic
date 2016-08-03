@@ -17,9 +17,10 @@ function latLngToFeaturePoint(latLng) {
   };
 }
 
-function getLatLngAlong(sourceLatLng, destLatLng, distance) {
+function getLatLngAlong(sourceLatLng, destLatLng, distanceMeters) {
   const line = latLngsToFeatureLine(sourceLatLng, destLatLng);
-  const along = turf.along(line, distance, 'kilometers');
+  const distanceKm = distanceMeters / 1000;
+  const along = turf.along(line, distanceKm, 'kilometers');
   return featureToLatLng(along);
 }
 
