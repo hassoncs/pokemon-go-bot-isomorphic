@@ -4,7 +4,6 @@ const colors = require('colors/safe');
 
 import {
   distanceBetweenLatLngs,
-  getLatLngAlong,
   randomLatLng,
 } from '../geo';
 
@@ -23,8 +22,8 @@ export default class TargetObjectiveWorker extends TickWorker {
     const {forts} = state.mapSummary;
     const {currentLatLng} = state.movement;
 
-    if (targetFortId) return console.log(['Skipped Targeting, already heading to a fort']);
-    if (!forts || !forts.length) return console.log(['Skipped Targeting, no forts in sight']);
+    if (targetFortId) return;// console.log(['Skipped Targeting, already heading to a fort']);
+    if (!forts || !forts.length) return;// console.log(['Skipped Targeting, no forts in sight']);
 
     // Sort the forts by their distance to the player
     forts.forEach((fort) => {
