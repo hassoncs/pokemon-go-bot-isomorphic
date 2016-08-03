@@ -37,11 +37,10 @@ const state = extend({
     itemsById: {},
   },
   mapSummary: {
-    catchable_pokemons: [],
     decimated_spawn_points: [],
     fort_summaries: [],
     forts: [],
-    pokemon: [],
+    pokemons: [],
     spawn_points: [],
     wild_pokemons: [],
     fortsByIds: {},
@@ -94,7 +93,6 @@ class Bot {
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }
 }
-;
 
 const bot = new Bot({state, client});
 bot.start();

@@ -13,9 +13,9 @@ export default class PokemonCatchingWorker extends TickWorker {
 
   act() {
     const {state} = this;
-    const {pokemon} = state.mapSummary;
+    const {pokemons} = state.mapSummary;
 
-    if (pokemon.length > 0) {
+    if (pokemons.length > 0) {
       this.catchPokemon(pokemon[0]);
     }
   }
@@ -26,17 +26,16 @@ export default class PokemonCatchingWorker extends TickWorker {
     console.log(pokemon);
     this.pause(8000);
 
-    const {encounterID, spawnPointID} = pokemon;
+    // const toLong = (({low, high, unsigned}) => new Long(low, high, unsigned));
+    const encounterID = (pokemon.encounterID);
+    const spawnPointID = (pokemon.spawnPointID);
     const pokeballItemID = 1;
     const normalizedReticleSize = 1.95;
     const hitPokemon = true;
     const spinModifier = 0.85;
     const normalizedHitPosition = 1;
 
-    console.log(`state.mapSummary.pokemon ${state.mapSummary.pokemon.length}`);
     state.mapSummary.pokemon = state.mapSummary.pokemon.filter(p => p !== pokemon);
-    console.log(`removed pokemon from mapSummary ${state.mapSummary.pokemon.length}`);
-
     client.encounter(encounterID, spawnPointID)
       .then(encounterResponse => {
         console.log(`encounterResponse`);

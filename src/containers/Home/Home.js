@@ -72,23 +72,24 @@ export default class Home extends Component {
             <TileLayer
               url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
             />
-            {widgets && widgets.mapSummary.catchable_pokemons.map((pokemon) => (
+            {widgets && widgets.mapSummary.pokemons.map((pokemon) => (
               <Marker
                 key={pokemon.id}
                 icon={L.divIcon({className: styles.pokemonMarker})}
-                position={[pokemon.latitude, pokemon.longitude]}
+                position={[pokemon.latLng.lat, pokemon.latLng.lng]}
               >
                 <Popup>
                   <div>
-                    <div>{pokemon.pokemon_id}</div>
+                    <div>{pokemon.pokemonID}</div>
                     <div>
-                      <PokemonIcon pokemonId={pokemon.pokemon_id} />
+                      <PokemonIcon pokemonId={pokemon.pokemonID} />
                     </div>
                     <div>
                       {`${new Date(new Long(
-                        pokemon.expiration_timestamp_ms.low,
-                        pokemon.expiration_timestamp_ms.high,
-                        pokemon.expiration_timestamp_ms.unsigned).toNumber()).toString()}`}
+                        pokemon.expirationTimestampMs.low,
+                        pokemon.expirationTimestampMs.high,
+                        pokemon.expirationTimestampMs.unsigned
+                      ).toNumber()).toString()}`}
                     </div>
                   </div>
                 </Popup>
