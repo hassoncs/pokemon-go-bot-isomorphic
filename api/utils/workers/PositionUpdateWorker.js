@@ -58,6 +58,10 @@ export default class PositionUpdateWorker extends TickWorker {
     const fort = fortsByIds[targetFortId];
     if (!fort) return;
 
+    if (Date.now() - fort.arrivedEpoch < 30 * 1000) {
+      return console.log(`This fort has been spun too recently. Skipping.`.toString().yellow);
+    }
+
     console.log(`Spinning fort with id '${fort.id}'`);
     this.bot.pause(2000);
 
@@ -100,8 +104,8 @@ export default class PositionUpdateWorker extends TickWorker {
 
         // console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
         const localItems = utils.toLocalItems(searchDetails.items_awarded);
+        console.log(`  ${xp} xp`.toString().green);
         logUtils.logItems(localItems, 'green');
-        console.log(`${xp} – XP`.toString().green);
 
         const last = {xp, items: localItems};
         state.target.last = last;
