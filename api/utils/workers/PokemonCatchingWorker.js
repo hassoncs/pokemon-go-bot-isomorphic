@@ -10,7 +10,7 @@ const pauseDurationBeforeCatching = 5000;
 export default class PokemonCatchingWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 10 * 500,
+      actEvery: 5 * 1000,
     };
   }
 
@@ -24,7 +24,7 @@ export default class PokemonCatchingWorker extends TickWorker {
 
   encounterPokemon(encounter) {
     const {client, state} = this;
-    this.bot.pause(this.getConfig().actEvery);
+    this.bot.pause(this.getConfig().actEvery * 2);
     const {encounterID, spawnPointID} = encounter;
 
     const data = {};
