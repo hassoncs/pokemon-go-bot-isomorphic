@@ -58,7 +58,7 @@ export default class MapSummaryWorker extends TickWorker {
         });
         state.mapSummary = mapSummary;
         console.log(
-          `Found ${mapSummary.pokemon.length} catchable pokemon, and ${mapSummary.forts.length} Pokestops`.toString().green);
+          `Found ${mapSummary.pokemons.length} catchable pokemon, and ${mapSummary.forts.length} Pokestops`.toString().green);
       });
   }
 

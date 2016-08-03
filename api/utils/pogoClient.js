@@ -69,15 +69,16 @@ class Bot {
     this._lastTickEpoch = Date.now();
 
     const {state, client} = this;
+    const params = {state, client, bot: this};
     this._workers = [
-      new LoginWorker({state, client}),
-      new PlayerUpdateWorker({state, client}),
-      new PositionUpdateWorker({state, client}),
-      new MapSummaryWorker({state, client}),
-      new StateSaveWorker({state, client}),
-      new TargetObjectiveWorker({state, client}),
-      new InventoryWorker({state, client}),
-      new PokemonCatchingWorker({state, client}),
+      new LoginWorker(params),
+      new PlayerUpdateWorker(params),
+      new PositionUpdateWorker(params),
+      new MapSummaryWorker(params),
+      new StateSaveWorker(params),
+      new TargetObjectiveWorker(params),
+      new InventoryWorker(params),
+      new PokemonCatchingWorker(params),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }
@@ -91,6 +92,10 @@ class Bot {
     this._workers.forEach((worker) => worker.didTick(elapsedMsSinceTick));
 
     setTimeout(() => this.tick(), TICK_INTERVAL);
+  }
+
+  pause(duration) {
+    this._lastTickEpoch += duration;
   }
 }
 

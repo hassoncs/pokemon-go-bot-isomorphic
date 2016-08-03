@@ -27,7 +27,7 @@ export default class PositionUpdateWorker extends TickWorker {
     const {currentLatLng, targetLatLng, speedMps} = state.movement;
 
     if (!fortsByIds) return console.log(`fortsByIds isn't ready`);
-    if (!targetLatLng) return console.log('At target, not moving player.');
+    if (!targetFortId || !targetLatLng) return console.log('At target, not moving player.');
 
     const distanceToTarget = distanceBetweenLatLngs(currentLatLng, targetLatLng);
     const timeTilTarget = distanceToTarget / speedMps;
@@ -36,7 +36,7 @@ export default class PositionUpdateWorker extends TickWorker {
     state.target.timeTilTarget = timeTilTarget;
 
     // Check if we reached the target
-    if (targetFortId && distanceToTarget <= pokestopUsageRadius) {
+    if (distanceToTarget <= pokestopUsageRadius) {
       this.spinFort();
     } else {
       console.log(`Heading to Pokestop ${distanceToTarget.toFixed(0)}m away. ETA: ${timeTilTarget.toFixed(0)}s`);
