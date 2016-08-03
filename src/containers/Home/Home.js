@@ -51,6 +51,7 @@ export default class Home extends Component {
 
     if (!state) return null;
     const playerLatLng = state.movement.currentLatLng;
+    const playerRandomizedLatLng = state.movement.randomizedLatLng;
 
     console.log(widgets);
     return (
@@ -113,6 +114,16 @@ export default class Home extends Component {
             <Marker
               icon={L.divIcon({className: styles.playerMarker})}
               position={playerLatLng} key={'player'}
+            >
+              <Popup>
+                  <span>
+                    Player
+                  </span>
+              </Popup>
+            </Marker>
+            <Marker
+              icon={L.divIcon({className: styles.playerMarkerRandomized})}
+              position={playerRandomizedLatLng} key={'playerRandomized'}
             >
               <Popup>
                   <span>
