@@ -4,8 +4,6 @@ import jsonfile from 'jsonfile';
 import extend from 'lodash/extend';
 const colors = require('colors/safe');
 
-const client = new pogobuf.Client();
-
 // const s2LatLng = new s2.S2LatLng(initialLatLng.lat, initialLatLng.lng); // Bottom of home curvy hill
 // const latLng = new s2.S2LatLng(37.808836, -122.410013); // Pier 39
 // const latLng = new s2.S2LatLng(37.758735, -122.403586); // Home
@@ -61,24 +59,23 @@ const TICK_INTERVAL = 1000;
 class Bot {
   constructor({state, client}) {
     this.state = state;
-    this.client = client;
   }
 
   start() {
     console.log(colors.red('Starting bot.'));
     this._lastTickEpoch = Date.now();
 
-    const {state, client} = this;
-    const params = {state, client, bot: this};
+    const {state} = this;
+    this.params = {state, bot: this};
     this._workers = [
-      new LoginWorker(params),
-      new PlayerUpdateWorker(params),
-      new PositionUpdateWorker(params),
-      new MapSummaryWorker(params),
-      new StateSaveWorker(params),
-      new TargetObjectiveWorker(params),
-      new InventoryWorker(params),
-      new PokemonCatchingWorker(params),
+      new LoginWorker(this.params),
+      new PlayerUpdateWorker(this.params),
+      new PositionUpdateWorker(this.params),
+      new MapSummaryWorker(this.params),
+      new StateSaveWorker(this.params),
+      new TargetObjectiveWorker(this.params),
+      new InventoryWorker(this.params),
+      new PokemonCatchingWorker(this.params),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }
@@ -97,14 +94,19 @@ class Bot {
   pause(duration) {
     this._lastTickEpoch += duration;
   }
+
+  updateWorkers() {
+    this._workers.forEach(worker => {
+      worker.client = this.params.client;
+    });
+  }
 }
 
-const bot = new Bot({state, client});
+const bot = new Bot({state});
 bot.start();
 
 const pogoClient = {
   state,
-  client,
 };
 
 module.exports = pogoClient;
