@@ -1,5 +1,7 @@
 import TickWorker from './TickWorker';
+import Long from 'long';
 const s2 = require('s2geometry-node');
+import isFunction from 'lodash/isFunction';
 import {
   distanceBetweenLatLngs,
   latLngToFeaturePoint,
@@ -28,7 +30,6 @@ export default class MapSummaryWorker extends TickWorker {
           decimated_spawn_points: [],
           fort_summaries: [],
           forts: [],
-          nearby_pokemons: [],
           spawn_points: [],
           wild_pokemons: [],
           fortsByIds: {}
@@ -40,14 +41,24 @@ export default class MapSummaryWorker extends TickWorker {
           });
         });
 
+        mapSummary.pokemon = mapSummary.catchable_pokemons.map(pokemon => {
+          const toInt = (({low, high, unsigned}) => new Long(low, high, unsigned));
+          return {
+            encounterID: toInt(pokemon.encounter_id),
+            pokemonId: pokemon.pokemon_id,
+            spawnPointID: pokemon.spawn_point_id,
+            expirationTimestampMs: toInt(pokemon.expiration_timestamp_ms),
+            latLng: {lat: pokemon.latitude, lng: pokemon.longitude},
+          };
+        });
+        delete mapSummary.catchable_pokemons;
+
         mapSummary.forts.forEach((fort) => {
           mapSummary.fortsByIds[fort.id] = fort;
         });
         state.mapSummary = mapSummary;
         console.log(
-          `MapSummary resolved. 
-          Catchable: ${mapSummary.catchable_pokemons.length}, 
-          Forts: ${mapSummary.forts.length}`);
+          `Found ${mapSummary.pokemon.length} catchable pokemon, and ${mapSummary.forts.length} Pokestops`.toString().green);
       });
   }
 

@@ -19,6 +19,7 @@ export default class LoginWorker extends TickWorker {
         const latLng = state.movement.currentLatLng;
         client.setAuthInfo('ptc', token);
         client.setPosition(latLng.lat, latLng.lng);
+        client.setMaxTries(1); // debugging!
         return client.init();
       })
       .then(() => {

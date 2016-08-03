@@ -41,7 +41,7 @@ const state = extend({
     decimated_spawn_points: [],
     fort_summaries: [],
     forts: [],
-    nearby_pokemons: [],
+    pokemon: [],
     spawn_points: [],
     wild_pokemons: [],
     fortsByIds: {},
@@ -56,6 +56,7 @@ import TargetObjectiveWorker from './workers/TargetObjectiveWorker';
 import PlayerUpdateWorker from './workers/PlayerUpdateWorker';
 import PositionUpdateWorker from './workers/PositionUpdateWorker';
 import InventoryWorker from './workers/InventoryWorker';
+import PokemonCatchingWorker from './workers/PokemonCatchingWorker';
 const TICK_INTERVAL = 1000;
 
 class Bot {
@@ -77,6 +78,7 @@ class Bot {
       new StateSaveWorker({state, client}),
       new TargetObjectiveWorker({state, client}),
       new InventoryWorker({state, client}),
+      new PokemonCatchingWorker({state, client}),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }
