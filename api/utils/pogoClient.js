@@ -32,7 +32,10 @@ const target = extend({
 const state = extend({
   target,
   movement,
-  inventory: {},
+  inventory: {
+    items: [],
+    itemsById: {},
+  },
   mapSummary: {
     catchable_pokemons: [],
     decimated_spawn_points: [],
@@ -73,7 +76,7 @@ class Bot {
       new MapSummaryWorker({state, client}),
       new StateSaveWorker({state, client}),
       new TargetObjectiveWorker({state, client}),
-      // new InventoryWorker({state, client}),
+      new InventoryWorker({state, client}),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }

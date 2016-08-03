@@ -1,6 +1,8 @@
 import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
+import logUtils from '../logUtils';
+import utils from '../utils';
 
 import {
   distanceBetweenLatLngs,
@@ -70,19 +72,18 @@ export default class PositionUpdateWorker extends TickWorker {
     client.fortDetails(fort.id, fort.latitude, fort.longitude)
       .then((details) => {
         const fortType = pogobuf.Utils.getEnumKeyByValue(POGOProtos.Map.Fort.FortType, details.type);
-        console.log(`At fort '${details.name}', a ${fortType}`);
+        console.log(`At ${fortType} '${details.name}'`.toString.green);
 
         fort.details = details;
         fort.fortType = fortType;
         if (fort.fortType === 'Gym') {
           state.target.targetFortId = null;
-          throw 'This is a gym, not spinning.';
+          throw 'This is a gym, not spinning.'.yellow;
         }
 
         return new Promise((resolve) => {
           setTimeout(resolve, waitBeforeSpinningPokestop);
           this.pause(waitBeforeSpinningPokestop);
-          console.log(`waiting before spinning`);
         });
       })
       .then(() => {
@@ -99,13 +100,15 @@ export default class PositionUpdateWorker extends TickWorker {
         if (searchDetails.result === 3) return console.log(`Fort on cooldown!`.toString().red);
         if (searchDetails.result === 4) console.log(`Fort search successful, but inventory is full!`.toString().green);
 
-        const items = searchDetails.items_awarded.map((item) => {
-          const name = pogobuf.Utils.getEnumKeyByValue(POGOProtos.Inventory.Item.ItemId, item.item_id);
-          return {name, count: item.item_count};
-        });
-        const last = {xp, items};
+
+        console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
+        const localItems = utils.toLocalItems(searchDetails.items_awarded);
+        logUtils.logItems(localItems, 'green');
+        console.log(`${xp} – XP`.toString().green);
+
+        const last = {xp, items: localItems};
         state.target.last = last;
-        console.log(`Done Spinning fort ${fort.details.name}`, last);
+        // console.log(`Done Spinning fort ${fort.details.name}`, last);
         state.target.targetFortId = null;
       })
       .catch((error) => {
