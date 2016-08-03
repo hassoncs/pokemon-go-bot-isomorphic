@@ -13,7 +13,7 @@ import {
 export default class MapSummaryWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 50 * 1000,
+      actEvery: 30 * 1000,
     };
   }
 

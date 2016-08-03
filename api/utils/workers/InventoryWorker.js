@@ -7,7 +7,7 @@ import logUtils from '../logUtils';
 export default class InventoryWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 20 * 1000, // 30 seconds
+      actEvery: 60 * 1000,
     };
   }
 
