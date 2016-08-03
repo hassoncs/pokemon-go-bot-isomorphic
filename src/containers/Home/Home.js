@@ -44,12 +44,13 @@ export default class Home extends Component {
 
   render() {
     const L = require('leaflet');
-    const {Map, Marker, Popup, TileLayer} = require('react-leaflet');
+    const {Map, Marker, Popup, TileLayer, Polyline} = require('react-leaflet');
     const styles = require('./Home.scss');
     const {widgets, load} = this.props;
     const state = widgets;
 
     if (!state) return null;
+    const targetLatLng = state.movement.targetLatLng;
     const playerLatLng = state.movement.currentLatLng;
     const playerRandomizedLatLng = state.movement.randomizedLatLng;
 
@@ -132,6 +133,9 @@ export default class Home extends Component {
                   </span>
               </Popup>
             </Marker>
+            <Polyline
+              positions={[playerLatLng, targetLatLng]}
+            />
           </Map>
         </div>
       </div>
