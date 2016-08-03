@@ -11,6 +11,11 @@ import {
 } from '../geo';
 
 export default class MapSummaryWorker extends TickWorker {
+  constructor({state, client, bot}) {
+    super({state, client, bot});
+    this._pausedTimeMs = 10000;
+  }
+
   getConfig() {
     return {
       actEvery: 30 * 1000,

@@ -9,6 +9,11 @@ import async from 'async';
 const delayBetweenItems = 3000;
 
 export default class InventoryWorker extends TickWorker {
+  constructor({state, client, bot}) {
+    super({state, client, bot});
+    //this._pausedTimeMs = 7500;
+  }
+
   getConfig() {
     return {
       actEvery: 30 * 1000, // 30 seconds
@@ -16,9 +21,7 @@ export default class InventoryWorker extends TickWorker {
   }
 
   act() {
-    console.log(['InventoryWorker act',]);
     const {client, state} = this;
-
     client.getInventory(0)
       .then(rawInventory => {
         if (!rawInventory.success) reject('success=false in inventory response');
@@ -51,8 +54,7 @@ export default class InventoryWorker extends TickWorker {
           this.bot.pause(delayBetweenItems);
           client.recycleInventoryItem(itemId, count)
             .then(response => {
-              console.log(JSON.stringify(response));
-              if (response.status === 1) {
+              if (response.result === 1) {
                 console.log(`Recycling item successful`.toString().green);
                 state.inventory.itemsById[itemId].count = response.new_count;
               } else {

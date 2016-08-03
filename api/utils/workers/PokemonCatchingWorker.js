@@ -3,11 +3,17 @@ import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 import utils from '../utils';
 import logUtils from '../logUtils';
+import InventoryPruner from '../InventoryPruner';
 import async from 'async';
 
 const pauseDurationBeforeCatching = 5000;
 
 export default class PokemonCatchingWorker extends TickWorker {
+  constructor({state, client, bot}) {
+    super({state, client, bot});
+    this._pausedTimeMs = 15000;
+  }
+
   getConfig() {
     return {
       actEvery: 5 * 1000,
@@ -15,6 +21,9 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   act() {
+    const pokeballItemID = this.getPokeballItemID();
+    if (!pokeballItemID) return console.log('Out of pokeballs! Skipping catching.'.red);
+
     const {state} = this;
     const encounters = state.mapSummary.encounters;
     if (encounters.length > 0) {
@@ -60,6 +69,7 @@ export default class PokemonCatchingWorker extends TickWorker {
         state.encounter.pokemon.pokedex = pokedex;
         data.encounterResponse = encounterResponse;
         console.log(`Catching ${logUtils.getPokemonNameString({pokedex, cp})}`);
+        console.log(['probabilities',probabilities]);
 
         return this.catchPokemon(encounter, data.encounterResponse);
       });
@@ -133,8 +143,11 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   getPokeballItemID() {
-    return 1;
+    const {state} = this;
+    const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
+    for (let i = 0; i < ballItems.length; ++i) {
+      return ballItems[0].id;
+    }
+    return 0;
   }
-
-
 }
