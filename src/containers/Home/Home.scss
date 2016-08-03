@@ -34,15 +34,22 @@
 }
 
 .playerMarker {
-  width: 10px;
-  height: 10px;
+  width: 6px !important;
+  height: 6px !important;
   border-radius: 100%;
   background: #cc2727;
 }
 
+.playerMarkerRandomized {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 100%;
+  background: rgba(156, 52, 47, 0.43);
+}
+
 .pokemonMarker {
-  width: 10px;
-  height: 10px;
+  width: 6px !important;
+  height: 6px !important;
   border-radius: 100%;
   background: #cc9112;
 }
