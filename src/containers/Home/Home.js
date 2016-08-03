@@ -73,7 +73,7 @@ export default class Home extends Component {
             <TileLayer
               url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
             />
-            {widgets && widgets.mapSummary.pokemons.map((pokemon) => (
+            {widgets && widgets.mapSummary.encounters.map((pokemon) => (
               <Marker
                 key={pokemon.id}
                 icon={L.divIcon({className: styles.pokemonMarker})}

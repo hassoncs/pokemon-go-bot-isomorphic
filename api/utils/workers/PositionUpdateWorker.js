@@ -92,13 +92,13 @@ export default class PositionUpdateWorker extends TickWorker {
 
         const xp = searchDetails.experience_awarded;
         if (searchDetails.result === 0) return console.log(`Fort search failed, try again later :(`.toString().red);
-        if (searchDetails.result === 1) console.log(`Fort search successful!`.toString().green);
-        if (searchDetails.result === 2) return console.log(`Fort out of range!`.toString().red);
-        if (searchDetails.result === 3) return console.log(`Fort on cooldown!`.toString().red);
-        if (searchDetails.result === 4) console.log(`Fort search successful, but inventory is full!`.toString().green);
+        if (searchDetails.result === 1) console.log(`Fort search successful`.toString().green);
+        if (searchDetails.result === 2) return console.log(`Fort out of range`.toString().red);
+        if (searchDetails.result === 3) return console.log(`Fort on cooldown`.toString().red);
+        if (searchDetails.result === 4) console.log(`Fort search successful, but inventory is full`.toString().green);
 
 
-        console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
+        // console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
         const localItems = utils.toLocalItems(searchDetails.items_awarded);
         logUtils.logItems(localItems, 'green');
         console.log(`${xp} – XP`.toString().green);

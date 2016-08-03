@@ -10,14 +10,13 @@ const pauseDurationBeforeCatching = 5000;
 export default class PokemonCatchingWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 10 * 1000,
+      actEvery: 10 * 500,
     };
   }
 
   act() {
     const {state} = this;
-    const encounters = state.mapSummary.pokemons;
-
+    const encounters = state.mapSummary.encounters;
     if (encounters.length > 0) {
       this.encounterPokemon(encounters[0]);
     }
@@ -29,7 +28,7 @@ export default class PokemonCatchingWorker extends TickWorker {
     const {encounterID, spawnPointID} = encounter;
 
     const data = {};
-    state.mapSummary.pokemons = state.mapSummary.pokemons.filter(p => p !== encounter);
+    state.mapSummary.encounters = state.mapSummary.encounters.filter(p => p !== encounter);
     client.encounter(encounterID, spawnPointID)
       .then(encounterResponse => {
         // console.log(`encounterResponse`);
@@ -55,10 +54,12 @@ export default class PokemonCatchingWorker extends TickWorker {
           move_2,
           cp_multiplier,
         } = pokemon;
-        state.encounter.pokemon = pokemon;
+        const pokedex = utils.getPokemonByNumber(pokemon_id);
 
+        state.encounter.pokemon = pokemon;
+        state.encounter.pokemon.pokedex = pokedex;
         data.encounterResponse = encounterResponse;
-        console.log(`Trying to catch pokemon ${pokemon_id} with CP ${cp}, diff ${difficulty}, probabilities ${probabilities}`);
+        console.log(`Catching ${logUtils.getPokemonNameString({pokedex, cp})}`);
 
         return this.catchPokemon(encounter, data.encounterResponse);
       });
@@ -104,12 +105,11 @@ export default class PokemonCatchingWorker extends TickWorker {
         console.log(`Catch error`.toString().red);
         return false;
       } else if (status === 1) {
-        console.log(`Catch success!`.toString().green);
         const {pokemon} = state.encounter;
-        const {cp, pokemon_id} = pokemon;
-        console.log(`Caught pokemon ${pokemon_id} with CP ${cp}!`.toString().green);
+        const {cp, pokemon_id, pokedex} = pokemon;
+        console.log(`Caught ${logUtils.getPokemonNameString({pokedex, cp})}!`.toString().green);
         const totalXP = capture_award.xp[0] + capture_award.xp[1] + capture_award.xp[2];
-        console.log(`Got ${totalXP}XP, ${capture_award.candy[0]} candies, and ${capture_award.stardust[0]} stardust`.toString().green);
+        console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
         return false;
       } else if (status === 2) {
         console.log(`Pokemon broke free! Trying again...`.toString().yellow);
@@ -135,4 +135,6 @@ export default class PokemonCatchingWorker extends TickWorker {
   getPokeballItemID() {
     return 1;
   }
+
+
 }

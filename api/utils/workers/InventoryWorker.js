@@ -22,7 +22,7 @@ export default class InventoryWorker extends TickWorker {
 
         const inventory = pogobuf.Utils.splitInventory(rawInventory);
         const items = utils.toLocalItems(inventory.items);
-        logUtils.logItems(items, 'green');
+        logUtils.logItems(items);
 
         const itemsById = {};
         items.map(item => itemsById[item.id] = item);

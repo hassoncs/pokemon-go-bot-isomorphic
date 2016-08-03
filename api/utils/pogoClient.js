@@ -40,7 +40,7 @@ const state = extend({
     decimated_spawn_points: [],
     fort_summaries: [],
     forts: [],
-    pokemons: [],
+    encounters: [],
     spawn_points: [],
     wild_pokemons: [],
     fortsByIds: {},

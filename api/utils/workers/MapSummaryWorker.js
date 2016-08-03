@@ -18,9 +18,7 @@ export default class MapSummaryWorker extends TickWorker {
   }
 
   act() {
-    console.log(['MapSummaryWorker act',]);
     const {client, state} = this;
-
     const {currentLatLng} = state.movement;
     const cellIDs = this.getCellIDs(currentLatLng, 10); // cell count
     return client.getMapObjects(cellIDs, Array(cellIDs.length).fill(0))
@@ -41,7 +39,7 @@ export default class MapSummaryWorker extends TickWorker {
           });
         });
 
-        mapSummary.pokemons = mapSummary.catchable_pokemons.map(pokemon => {
+        mapSummary.encounters = mapSummary.catchable_pokemons.map(pokemon => {
           const toLong = (({low, high, unsigned}) => new Long(low, high, unsigned));
           return {
             encounterID: toLong(pokemon.encounter_id),
@@ -58,7 +56,7 @@ export default class MapSummaryWorker extends TickWorker {
         });
         state.mapSummary = mapSummary;
         console.log(
-          `Found ${mapSummary.pokemons.length} catchable pokemon, and ${mapSummary.forts.length} Pokestops`.toString().green);
+          `Found ${mapSummary.encounters.length} catchable pokemon, and ${mapSummary.forts.length} Pokestops`.toString().green);
       });
   }
 
