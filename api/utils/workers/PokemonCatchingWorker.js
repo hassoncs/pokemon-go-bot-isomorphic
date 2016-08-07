@@ -139,7 +139,7 @@ export default class PokemonCatchingWorker extends TickWorker {
 
   getCatchOptions(encounterResponse) {
     const spinModifier = Math.random() * 0.85;
-    const normalizedReticleSize = Math.random() * 1.95;
+    const normalizedReticleSize = 1 + Math.random() * 0.95;
     const normalizedHitPosition = 1.0;
     const catchOptions = {
       spinModifier,
