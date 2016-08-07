@@ -40,25 +40,28 @@ export default class InventoryWorker extends TickWorker {
 
         // Check if we should throw anything away..
         const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items);
-        const throwAwayCountByItemId = InventoryPruner.getThrowAwayCountByItemId(items, throwAwayCountByType);
+        const throwAwayItems = InventoryPruner.getThrowAwayItemsSubset(items, throwAwayCountByType);
 
-        if (Object.keys(throwAwayCountByItemId).length === 0) {
+        if (throwAwayItems.length === 0) {
           return console.log('Keeping all items, bag not full');
         }
 
-        const itemIds = Object.keys(throwAwayCountByItemId);
-        async.eachSeries(itemIds, (itemId, cb) => {
-          const count = throwAwayCountByItemId[itemId];
-          console.log(`Recycling ${count} of item ${itemId}...`);
+        // Pause for a moment before recycling
+        this.bot.pause(2000);
+
+        async.eachSeries(throwAwayItems, (item, cb) => {
+          const count = item.count;
+          const name = logUtils.getItemNameString(item.name);
+          console.log(`Recycling ${count} ${name}...`);
 
           this.bot.pause(delayBetweenItems);
-          client.recycleInventoryItem(itemId, count)
+          client.recycleInventoryItem(item.id, count)
             .then(response => {
               if (response.result === 1) {
-                console.log(`Recycling item successful`.toString().green);
-                state.inventory.itemsById[itemId].count = response.new_count;
+                console.log(`Recycled ${count} ${name}`.toString().green);
+                state.inventory.itemsById[item.id].count = response.new_count;
               } else {
-                console.log(`Recycling item failed`.toString().red);
+                console.log(`Failed to recyle ${count} ${name}`.toString().red);
               }
               setTimeout(cb, delayBetweenItems);
             });

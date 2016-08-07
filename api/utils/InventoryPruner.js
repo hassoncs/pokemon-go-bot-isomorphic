@@ -1,5 +1,7 @@
 import _ from 'lodash';
 import itemData from '../data/itemData';
+import pogobuf from 'pogobuf';
+import POGOProtos from 'node-pogo-protos';
 
 const maxInventorySize = 300;
 const percentByType = {
@@ -45,6 +47,19 @@ class InventoryPruner {
     }, {});
 
     return throwAwayCountByType;
+  }
+
+  getThrowAwayItemsSubset(items, throwAwayCountByType) {
+    const itemCounts = this.getThrowAwayCountByItemId(items, throwAwayCountByType);
+    return Object.keys(itemCounts).map((itemId) => {
+      const throwAwayCount = itemCounts[itemId];
+      return {
+        id: itemId,
+        count: throwAwayCount,
+        type: itemData && itemData[0] && itemData[0].type || 'special',
+        name: pogobuf.Utils.getEnumKeyByValue(POGOProtos.Inventory.Item.ItemId, +itemId),
+      };
+    });
   }
 
   getThrowAwayCountByItemId(items, throwAwayCountByType) {
