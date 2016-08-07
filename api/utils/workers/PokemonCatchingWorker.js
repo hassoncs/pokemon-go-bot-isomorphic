@@ -21,14 +21,14 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   act() {
+    const {state} = this;
+    const encounters = state.mapSummary.encounters;
+    if (encounters.length === 0) return;
+
     const pokeballItemID = this.getPokeballItemID();
     if (!pokeballItemID) return console.log('Out of pokeballs! Skipping catching.'.red);
 
-    const {state} = this;
-    const encounters = state.mapSummary.encounters;
-    if (encounters.length > 0) {
-      this.encounterPokemon(encounters[0]);
-    }
+    this.encounterPokemon(encounters[0]);
   }
 
   encounterPokemon(encounter) {
@@ -118,8 +118,13 @@ export default class PokemonCatchingWorker extends TickWorker {
         const {pokemon} = state.encounter;
         const {cp, pokemon_id, pokedex} = pokemon;
         console.log(`Caught ${logUtils.getPokemonNameString({pokedex, cp})}!`.toString().green);
-        const totalXP = capture_award.xp[0] + capture_award.xp[1] + capture_award.xp[2];
+
+        const totalXP = capture_award.xp.reduce((sum, xp) => {
+          sum += xp;
+          return sum;
+        }, 0);
         console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
+
         return false;
       } else if (status === 2) {
         console.log(`Pokemon broke free! Trying again...`.toString().yellow);
@@ -133,13 +138,21 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   getCatchOptions(encounterResponse) {
-    return {
-      pokeballItemID: this.getPokeballItemID(),
-      normalizedReticleSize: 1.95,
+    const spinModifier = Math.random() * 0.85;
+    const normalizedReticleSize = Math.random() * 1.95;
+    const normalizedHitPosition = 1.0;
+    const catchOptions = {
+      spinModifier,
+      normalizedReticleSize,
+      normalizedHitPosition,
       hitPokemon: true,
-      spinModifier: 0.85,
-      normalizedHitPosition: 1.0,
+      pokeballItemID: this.getPokeballItemID(),
     };
+
+    console.log(`Using catch options...`);
+    console.log(JSON.stringify(catchOptions));
+
+    return catchOptions;
   }
 
   getPokeballItemID() {
