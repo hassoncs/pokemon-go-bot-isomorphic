@@ -124,7 +124,7 @@
     "node-geocoder": "^3.13.1",
     "node-pogo-protos": "^1.1.1",
     "piping": "^0.3.0",
-    "pogobuf": "git+https://github.com/cyraxx/pogobuf.git#aaa305a82d7c71dfc70d5c3e1ac77181f0831cc4",
+    "pogobuf": "github:cyraxx/pogobuf#dd1c26d0cc932d21aa28c7877c89a55ac64fb22d",
     "pretty-error": "^1.2.0",
     "react": "^0.14.8",
     "react-bootstrap": "^0.28.1",
