@@ -68,8 +68,8 @@ export default class PokemonCatchingWorker extends TickWorker {
         state.encounter.pokemon = pokemon;
         state.encounter.pokemon.pokedex = pokedex;
         data.encounterResponse = encounterResponse;
-        console.log(`Catching ${logUtils.getPokemonNameString({pokedex, cp})}`);
-        console.log(['probabilities',probabilities]);
+        console.log(`Catching ${logUtils.getPokemonNameString({pokedex, cp})}...`);
+        // console.log(['probabilities',probabilities]);
 
         return this.catchPokemon(encounter, data.encounterResponse);
       });
@@ -117,7 +117,7 @@ export default class PokemonCatchingWorker extends TickWorker {
       } else if (status === 1) {
         const {pokemon} = state.encounter;
         const {cp, pokemon_id, pokedex} = pokemon;
-        console.log(`Caught ${logUtils.getPokemonNameString({pokedex, cp})}!`.toString().green);
+        console.log(`Caught ${logUtils.getPokemonNameString({pokedex, cp})}`.toString().green);
 
         const totalXP = capture_award.xp.reduce((sum, xp) => {
           sum += xp;
@@ -148,9 +148,8 @@ export default class PokemonCatchingWorker extends TickWorker {
       hitPokemon: true,
       pokeballItemID: this.getPokeballItemID(),
     };
-
-    console.log(`Using catch options...`);
-    console.log(JSON.stringify(catchOptions));
+    // console.log(`Using catch options...`);
+    // console.log(JSON.stringify(catchOptions));
 
     return catchOptions;
   }
