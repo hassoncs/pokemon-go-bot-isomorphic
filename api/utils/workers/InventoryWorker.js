@@ -169,9 +169,7 @@ export default class InventoryWorker extends TickWorker {
     // See how many candies we have for each pokemon type
 
     return new Promise(resolve => {
-      const pruneResults = PokemonPruner.prune(state.inventory);
-      const {pokemonToEvolve} = pruneResults;
-
+      const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
       if (pokemonToEvolve.length === 0) {
         console.log('No pokemon to evolve'.yellow);
         return resolve();

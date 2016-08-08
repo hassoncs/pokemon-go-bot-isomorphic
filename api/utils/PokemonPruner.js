@@ -5,16 +5,16 @@ import keyBy from 'lodash/keyBy';
 import sortBy from 'lodash/sortBy';
 
 class PokemonPruner {
-  prune(inventory) {
+  getPokemonToEvolve(inventory) {
 
     // Print all candies
     const candiesByIndex = keyBy(inventory.candies, 'familyID');
-    Object.keys(candiesByIndex).forEach(familyID => {
-      const candy = candiesByIndex[familyID];
-      const pokemonIndex = +familyID - 1;
-      const pokedex = utils.getPokedexByPokemonIndex(pokemonIndex);
-      console.log(`#${pokemonIndex}) ${candy.count}x ${pokedex.Name} Candies`);
-    });
+    // Object.keys(candiesByIndex).forEach(familyID => {
+    //   const candy = candiesByIndex[familyID];
+    //   const pokemonIndex = +familyID - 1;
+    //   const pokedex = utils.getPokedexByPokemonIndex(pokemonIndex);
+    //   console.log(`#${pokemonIndex}) ${candy.count}x ${pokedex.Name} Candies`);
+    // });
 
     // Loop through all pokemon seeing if we have enough candies to evolve any of them
 
@@ -46,13 +46,11 @@ class PokemonPruner {
       pokemonToEvolve.push.apply(pokemonToEvolve, cpSortedPokemons.slice(0, evolvableCount));
 
       // console.log(`${count}x ${name} #${pokemonIndex}`);
-      const evolveStr = pokemonIsCapableOfEvolving ? `could evolve ${evolvableCount} of them` : 'Can\'t evolve';
-      console.log(`${count}x ${name} (${candyCount} candies) (${evolveStr})`);
+      // const evolveStr = pokemonIsCapableOfEvolving ? `could evolve ${evolvableCount} of them` : 'Can\'t evolve';
+      // console.log(`${count}x ${name} (${candyCount} candies) (${evolveStr})`);
     });
 
-    return {
-      pokemonToEvolve
-    };
+    return pokemonToEvolve;
   }
 }
 
