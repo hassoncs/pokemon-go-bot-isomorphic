@@ -17,8 +17,9 @@ export default class MapSummaryWorker extends TickWorker {
   }
 
   getConfig() {
+    const randomSeconds = Math.random() * 20;
     return {
-      actEvery: 30 * 1000,
+      actEvery: (10 + randomSeconds) * 1000,
     };
   }
 
