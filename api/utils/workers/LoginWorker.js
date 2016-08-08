@@ -22,7 +22,7 @@ export default class LoginWorker extends TickWorker {
       const login = this.getLogin();
       login.login(env.username, env.password)
         .then(token => {
-          console.log(`Got login token ${token}`.toString().green);
+          console.log(`Got login token!`.toString().green);
           console.log(`Connecting to PokemonGo server...`.toString().yellow);
 
           const latLng = state.movement.currentLatLng;

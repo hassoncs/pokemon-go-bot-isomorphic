@@ -40,7 +40,7 @@ class PokemonPruner {
       if (!canEvolve) return; // console.log(`${name} needs ${requiredCandyCount}, but player only has ${candyCount}`);
       const evolvableCount = Math.min(
         count,
-        Math.floor(candyCount / requiredCandyCount),
+        Math.floor(candyCount / requiredCandyCount)
       );
 
       pokemonToEvolve.push.apply(pokemonToEvolve, cpSortedPokemons.slice(0, evolvableCount));

@@ -107,6 +107,10 @@ export default class PositionUpdateWorker extends TickWorker {
         console.log(`  ${xp} xp`.toString().green);
         logUtils.logItems(localItems, 'green');
 
+        localItems.forEach(item => {
+          utils.deltaItem(item.id, item.count, state.inventory);
+        });
+
         const last = {xp, items: localItems};
         state.target.last = last;
         // console.log(`Done Spinning fort ${fort.details.name}`, last);

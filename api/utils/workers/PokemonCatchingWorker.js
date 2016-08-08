@@ -71,7 +71,7 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   catchPokemon(encounter, encounterResponse, pokemon) {
-    const {client} = this;
+    const {client, state} = this;
     const {encounterID, spawnPointID} = encounter;
 
     return new Promise(resolve => {
@@ -90,6 +90,7 @@ export default class PokemonCatchingWorker extends TickWorker {
               console.log('Out of pokeballs! Skipping catching.'.red);
               return Promise.resolve();
             }
+            utils.deltaItem(pokeballItemID, -1, state.inventory);
             return client.catchPokemon(
               encounterID,
               pokeballItemID,
@@ -121,9 +122,7 @@ export default class PokemonCatchingWorker extends TickWorker {
           console.log(`Catch error`.toString().red);
           return false;
         } else if (status === 1) {
-          const {cp, pokedex} = pokemon;
           console.log(`Caught ${logUtils.getPokemonNameString(pokemon)}`.toString().green);
-
           const totalXP = capture_award.xp.reduce((sum, xp) => {
             sum += xp;
             return sum;
@@ -161,6 +160,9 @@ export default class PokemonCatchingWorker extends TickWorker {
   getPokeballItemID() {
     const {state} = this;
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
+    ballItems.forEach(ballItem => {
+      console.log(`Ball item ${ballItem.name}x${ballItem.count}`);
+    });
     for (let i = 0; i < ballItems.length; ++i) {
       return ballItems[0].id;
     }
