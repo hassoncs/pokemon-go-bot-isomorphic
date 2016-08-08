@@ -6,7 +6,8 @@ import logUtils from '../logUtils';
 import InventoryPruner from '../InventoryPruner';
 import async from 'async';
 
-const pauseDurationBeforeCatching = 5000;
+// Wait time after encountering the pokemon before you can catch them
+const pauseDurationBeforeCatching = 6000;
 
 export default class PokemonCatchingWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -33,7 +34,7 @@ export default class PokemonCatchingWorker extends TickWorker {
 
   encounterPokemon(encounter) {
     const {client, state} = this;
-    this.bot.pause(this.getConfig().actEvery * 2);
+    this.bot.pause(this.getConfig().actEvery * 3);
     const {encounterID, spawnPointID} = encounter;
 
     const data = {};
