@@ -180,7 +180,7 @@ export default class InventoryWorker extends TickWorker {
 
       console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
       async.eachSeries(pokemonToEvolve, (pokemon, cb) => {
-        console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}...`);
+        console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}`);
 
         client.evolvePokemon(pokemon.id)
           .then(response => {
@@ -208,7 +208,7 @@ export default class InventoryWorker extends TickWorker {
 
       console.log(`Transferring ${pokemons.length} pokemon`.toString().yellow);
       async.eachSeries(pokemons, (pokemon, cb) => {
-        console.log(`Transferring ${logUtils.getPokemonNameString(pokemon)}...`);
+        console.log(`Transferring ${logUtils.getPokemonNameString(pokemon)}`);
 
         client.releasePokemon(pokemon.id)
           .then(response => {
