@@ -9,7 +9,7 @@ export default class LoginWorker extends TickWorker {
     const {state} = this;
     return {
       needsLogIn: false,
-      actEvery: state.loggedIn ? 30 * 60 * 1000 : 30 * 1000, // 30 mins or 30 seconds
+      actEvery: state.loggedIn ? 10 * 60 * 1000 : 30 * 1000, // 10 mins or 30 seconds
     };
   }
 
