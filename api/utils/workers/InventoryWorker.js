@@ -8,6 +8,7 @@ import InventoryPruner from '../InventoryPruner';
 import PokemonPruner from '../PokemonPruner';
 import async from 'async';
 import jsonfile from 'jsonfile';
+import Long from 'long';
 import Promise from 'bluebird';
 
 const delayBetweenItems = 3000;
@@ -40,11 +41,13 @@ export default class InventoryWorker extends TickWorker {
 
               console.log('Inventory successful'.green);
               const inventory = pogobuf.Utils.splitInventory(rawInventory);
-              // state.inventory.rawInventory = inventory;
+              state.inventory.rawInventory = inventory;
 
               this.processItems(inventory);
               this.processPokemon(inventory);
               this.processCandies(inventory);
+              this.processAppliedItems(inventory);
+              this.processPlayer(inventory);
 
               // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
               // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
@@ -53,20 +56,17 @@ export default class InventoryWorker extends TickWorker {
               // });
 
               const backpackFullnessPercent = state.inventory.itemCount / state.inventory.maxItemCount;
-              const hasTooManyItems = (backpackFullnessPercent >= .9);
+              const hasTooManyItems = (backpackFullnessPercent >= .95);
 
               let recycleItemsPromise = Promise.resolve;
               if (hasTooManyItems) {
                 recycleItemsPromise = this.doRecycleItems.bind(this);
               }
 
-              let evolvePokemonPromise = Promise.resolve;
-              if (false /* Dont evolve them for now*/) {
-                evolvePokemonPromise = this.doPokemonEvolving.bind(this);
-              }
+              let evolvePokemonPromise = this.doPokemonEvolving.bind(this);
 
               let transferPokemonPromise = Promise.resolve;
-              const pokemonFullnessPercent = state.inventory.pokemonSummary.count /  state.inventory.pokemonSummary.maxCount;
+              const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
               const hasTooManyPokemon = (pokemonFullnessPercent >= .95);
               if (hasTooManyPokemon) {
                 transferPokemonPromise = this.doPokemonTransferring.bind(this);
@@ -80,7 +80,7 @@ export default class InventoryWorker extends TickWorker {
                 .delay(3000)
                 .then(transferPokemonPromise)
                 .then(() => {
-                  console.log('Done evolving and transferring!'.green);
+                  console.log('Done recycling items and evolving and transferring pokemon');
                   resolve();
                 })
                 .catch((e) => {
@@ -123,9 +123,9 @@ export default class InventoryWorker extends TickWorker {
     const pokemonsByIndex = groupBy(localPokemons, 'pokemonIndex');
     // Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
     //   const pokemons = pokemonsByIndex[pokemonIndex];
-      // const count = pokemons.length;
-      // const name = (pokemons[0].pokedex || {}).Name || 'Egg?';
-      // console.log(`#${pokemonIndex}) ${count}x ${name}`);
+    // const count = pokemons.length;
+    // const name = (pokemons[0].pokedex || {}).Name || 'Egg?';
+    // console.log(`#${pokemonIndex}) ${count}x ${name}`);
     // });
 
     // Pokemon processing
@@ -155,7 +155,42 @@ export default class InventoryWorker extends TickWorker {
     let candyCount = 0;
     candies.forEach(candy => candyCount += candy.count);
 
-    console.log(`Player has ${candyCount} Candies`.toString().green);  }
+    console.log(`Player has ${candyCount} Candies`.toString().green);
+  }
+
+  processAppliedItems(inventory) {
+    const {state} = this;
+    const appliedItems = inventory.applied_items.map((itemGroup) => {
+      const items = itemGroup.item;
+      const item = items[0];
+      if (item.item_id !== 301) return console.log(`Skipping, not an egg`);
+      const expireLong = new Long(item.expire_ms.low, item.expire_ms.high, item.expire_ms.unsigned);
+      const expirationDate = new Date(expireLong.toNumber());
+      console.log(`Lucky egg is ${(Date.now() > expirationDate.getTime()) ? 'expired!' : 'active'}`);
+      return {};
+    });
+    state.inventory.appliedItems = appliedItems;
+  }
+
+  processPlayer(inventory) {
+    const toNumber = (long) => new Long(long.low, long.high, long.unsigned).toNumber();
+
+    const {state} = this;
+    const playerData = inventory.player;
+    const nextLevelXp = toNumber(playerData.next_level_xp);
+    const experience = toNumber(playerData.experience);
+    const prevLevelXP = toNumber(playerData.prev_level_xp);
+    const player = {
+      level: playerData.level,
+      nextLevelXp,
+      experience,
+      prevLevelXP,
+    };
+    state.inventory.player = player;
+    console.log('Player data');
+    console.log(player);
+    console.log((experience / nextLevelXp * 100).toFixed(0));
+  }
 
   doRecycleItems() {
     const {client, state} = this;
@@ -191,13 +226,6 @@ export default class InventoryWorker extends TickWorker {
   // Overall Pokemon management
   doPokemonEvolving() {
     const {client, state} = this;
-    // console.log('Pokemon Management'.yellow);
-
-    // For each type of pokemon we want to know
-    // if we have all the evolutions. If not, save
-    // enough candies to get the farthest evolution.
-    // See how many candies we have for each pokemon type
-
     return new Promise(resolve => {
       const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
       if (pokemonToEvolve.length === 0) {
@@ -205,7 +233,15 @@ export default class InventoryWorker extends TickWorker {
         return resolve();
       }
 
+      // Skip evolving
+      if (true) {
+        console.log(`Could evolve ${pokemonToEvolve.length} pokemon`.toString().yellow);
+        return resolve();
+      }
+
       console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
+      return resolve();
+
       async.eachSeries(pokemonToEvolve, (pokemon, cb) => {
         console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}`);
 
