@@ -58,8 +58,8 @@ export default {
 
   deltaItem(itemId, delta, inventory) {
     const item = inventory.itemsById[itemId];
-    if (!item) return console.log(['No item with id', itemId]);
+    if (!item) return console.warn(['No item with id', itemId]);
     item.count = Math.max(0, item.count + delta);
-    return console.log(['New item count', item.name, item.count]);
+    //return console.log(['New item count', item.name, item.count]);
   },
 };
