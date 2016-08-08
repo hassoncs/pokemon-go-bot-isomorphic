@@ -53,31 +53,20 @@ export default class PokemonCatchingWorker extends TickWorker {
         const difficulty = capture_probability.reticle_difficulty_scale;
         const probabilities = capture_probability.capture_probability;
         const wildPokemon = encounterResponse.wild_pokemon;
-        const pokemon = wildPokemon.pokemon_data;
-        const {
-          cp,
-          pokemon_id,
-          individual_attack,
-          individual_defense,
-          individual_stamina,
-          move_1,
-          move_2,
-          cp_multiplier,
-        } = pokemon;
-        const pokedex = utils.getPokemonByNumber(pokemon_id);
+        const remotePokemon = wildPokemon.pokemon_data;
+        const pokemon = utils.toLocalPokemon(remotePokemon);
 
         state.encounter.pokemon = pokemon;
-        state.encounter.pokemon.pokedex = pokedex;
         data.encounterResponse = encounterResponse;
-        console.log(`Catching ${logUtils.getPokemonNameString({pokedex, cp})}...`);
+        console.log(`Catching ${logUtils.getPokemonNameString(pokemon)}...`);
         // console.log(['probabilities',probabilities]);
 
-        return this.catchPokemon(encounter, data.encounterResponse);
+        return this.catchPokemon(encounter, data.encounterResponse, pokemon);
       });
   }
 
-  catchPokemon(encounter, encounterResponse) {
-    const {client, state} = this;
+  catchPokemon(encounter, encounterResponse, pokemon) {
+    const {client} = this;
     const {encounterID, spawnPointID} = encounter;
     const {
       pokeballItemID,
@@ -85,7 +74,7 @@ export default class PokemonCatchingWorker extends TickWorker {
       hitPokemon,
       spinModifier,
       normalizedHitPosition,
-    } = this.getCatchOptions(encounterResponse);
+    } = this.getCatchOptions();
 
     var catchReponse = null;
     async.doWhilst((cb) => {
@@ -116,9 +105,8 @@ export default class PokemonCatchingWorker extends TickWorker {
         console.log(`Catch error`.toString().red);
         return false;
       } else if (status === 1) {
-        const {pokemon} = state.encounter;
-        const {cp, pokemon_id, pokedex} = pokemon;
-        console.log(`Caught ${logUtils.getPokemonNameString({pokedex, cp})}`.toString().green);
+        const {cp, pokedex} = pokemon;
+        console.log(`Caught ${logUtils.getPokemonNameString(pokemon)}`.toString().green);
 
         const totalXP = capture_award.xp.reduce((sum, xp) => {
           sum += xp;
@@ -138,7 +126,7 @@ export default class PokemonCatchingWorker extends TickWorker {
     });
   }
 
-  getCatchOptions(encounterResponse) {
+  getCatchOptions() {
     const spinModifier = Math.random() * 0.85;
     const normalizedReticleSize = 1 + Math.random() * 0.95;
     const normalizedHitPosition = 1.0;
