@@ -8,6 +8,7 @@ import InventoryPruner from '../InventoryPruner';
 import PokemonPruner from '../PokemonPruner';
 import async from 'async';
 import jsonfile from 'jsonfile';
+import Promise from 'bluebird';
 
 const delayBetweenItems = 3000;
 // const delayBetweenEvolves = 20000;
@@ -49,24 +50,20 @@ export default class InventoryWorker extends TickWorker {
 
           // Check if we should throw anything away..
           this.doRecycleItems()
-            .then(() => {
-              return new Promise(resolve => setTimeout(resolve, 3000));
-            })
-            .then(() => {
-              return this.doPokemonEvolving();
-            })
+            .bind(this)
+            .delay(3000)
+            .then(this.doPokemonEvolving)
             .then(() => {
               console.log('Done evolving!'.green);
               resolve();
             })
-            .catch(() => {
+            .catch((e) => {
               console.log('Something went wrong in InventoryWorker!'.red);
+              console.log(e);
               resolve();
             });
         });
     }));
-
-
   }
 
   processItems(inventory) {
@@ -141,16 +138,12 @@ export default class InventoryWorker extends TickWorker {
       return Promise.resolve();
     }
 
-    // Pause for a moment before recycling
-    this.bot.pause(2000);
-
     return new Promise(resolve => {
       async.eachSeries(throwAwayItems, (item, cb) => {
         const count = item.count;
         const name = logUtils.getItemNameString(item.name);
         console.log(`Recycling ${count} ${name}...`);
 
-        this.bot.pause(delayBetweenItems);
         client.recycleInventoryItem(item.id, count)
           .then(response => {
             if (response.result === 1) {
@@ -179,12 +172,15 @@ export default class InventoryWorker extends TickWorker {
       const pruneResults = PokemonPruner.prune(state.inventory);
       const {pokemonToEvolve} = pruneResults;
 
-      console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
+      if (pokemonToEvolve.length === 0) {
+        console.log('No pokemon to evolve'.yellow);
+        return resolve();
+      }
 
+      console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
       async.eachSeries(pokemonToEvolve, (pokemon, cb) => {
         console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}...`);
 
-        this.bot.pause(1000);
         client.evolvePokemon(pokemon.id)
           .then(response => {
             if (response.result === 1) {
