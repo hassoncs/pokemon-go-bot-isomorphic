@@ -2,6 +2,8 @@ import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 const env = require('../../../env');
 
+const client = new pogobuf.Client();
+
 export default class LoginWorker extends TickWorker {
   getConfig() {
     const {state} = this;
@@ -24,7 +26,6 @@ export default class LoginWorker extends TickWorker {
         console.log(`Connecting to PokemonGo server...`.toString().yellow);
 
         const latLng = state.movement.currentLatLng;
-        const client = new pogobuf.Client();
         this.bot.params.client = client;
         this.bot.updateWorkers();
 
