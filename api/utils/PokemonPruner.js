@@ -56,6 +56,9 @@ class PokemonPruner {
   getPokemonToTransfer(inventory) {
     const pokemonsByIndex = groupBy(inventory.pokemons, 'pokemonIndex');
 
+    const pokemonToEvolve = this.getPokemonToEvolve(inventory);
+    const pokemonToEvolveByIndex = groupBy(pokemonToEvolve, 'pokemonIndex')
+
     const pokemonToRelease = [];
     Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
       const pokemons = pokemonsByIndex[pokemonIndex];
@@ -71,12 +74,13 @@ class PokemonPruner {
       const pokemonHighestIV = ivSortedPokemons[0];
       // console.log(`High CP ${pokemonHighestCP.cp}, high IV ${pokemonHighestIV.getIV()}`);
 
+      const releaseEvolveLimitCount = pokemons.length - (pokemonToEvolveByIndex[pokemonIndex] || []).length; - 1
       const releasablePokemon = pokemons.filter((pokemon) => {
         return (pokemon !== pokemonHighestCP && pokemon !== pokemonHighestIV);
-      });
+      }).slice(0, releaseEvolveLimitCount);
 
       if (releasablePokemon.length === 0) return;
-      console.log(`Releasing ${releasablePokemon.length}/${pokemons.length} ${name}`);
+      console.log(`Releasing ${releasablePokemon.length}/${pokemons.length} ${name} limit ${releaseEvolveLimitCount}`);
 
       pokemonToRelease.push.apply(pokemonToRelease, releasablePokemon);
     });

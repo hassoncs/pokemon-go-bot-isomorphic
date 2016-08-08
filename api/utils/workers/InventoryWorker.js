@@ -67,7 +67,7 @@ export default class InventoryWorker extends TickWorker {
 
               let transferPokemonPromise = Promise.resolve;
               const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
-              const hasTooManyPokemon = (pokemonFullnessPercent >= .95);
+              const hasTooManyPokemon = true; //(pokemonFullnessPercent >= .95);
               if (hasTooManyPokemon) {
                 transferPokemonPromise = this.doPokemonTransferring.bind(this);
               }
@@ -262,7 +262,7 @@ export default class InventoryWorker extends TickWorker {
 
   doPokemonTransferring() {
     const {client, state} = this;
-    return new Promise(resolve => {
+    return new Promise(resolve => {;
       const pokemons = PokemonPruner.getPokemonToTransfer(state.inventory);
       if (pokemons.length === 0) {
         console.log('No pokemon to transfer'.yellow);
