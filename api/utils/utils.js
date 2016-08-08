@@ -20,8 +20,8 @@ export default {
     return items;
   },
 
-  getPokemonByNumber(number) {
-    return pokemonList[number - 1];
+  getPokedexByPokemonIndex(pokemonIndex) {
+    return pokemonList[pokemonIndex];
   },
 
   toLocalPokemon(remotePokemon) {
@@ -38,10 +38,11 @@ export default {
       stamina_max
     } = remotePokemon;
 
+    const pokemonIndex = parseInt(pokemon_id, 10) - 1;
     return new Pokemon({
       cp,
+      pokemonIndex,
       pokemonID: pokemon_id,
-      pokemonIndex: parseInt(pokemon_id, 10),
       individualAttack: individual_attack,
       individualDefense: individual_defense,
       individualStamina: individual_stamina,
