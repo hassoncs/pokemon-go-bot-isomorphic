@@ -2,6 +2,7 @@ import _ from 'lodash';
 import utils from './utils';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
+import sortBy from 'lodash/sortBy';
 
 class PokemonPruner {
   prune(inventory) {
@@ -21,8 +22,9 @@ class PokemonPruner {
     const pokemonToEvolve = [];
     Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
       const pokemons = pokemonsByIndex[pokemonIndex];
-      const representativePokemon = pokemons[0];
-      const count = pokemons.length;
+      const cpSortedPokemons = sortBy(pokemons, 'cp').reverse();
+      const representativePokemon = cpSortedPokemons[0];
+      const count = cpSortedPokemons.length;
       const pokedex = representativePokemon.pokedex;
       if (!pokedex) return;
       const name = pokedex.Name;
@@ -41,9 +43,7 @@ class PokemonPruner {
         Math.floor(candyCount / requiredCandyCount),
       );
 
-      for (let i = 0; i < evolvableCount; ++i) {
-        pokemonToEvolve.push(pokemonIndex);
-      }
+      pokemonToEvolve.push.apply(pokemonToEvolve, cpSortedPokemons.slice(0, evolvableCount));
 
       // console.log(`${count}x ${name} #${pokemonIndex}`);
       const evolveStr = pokemonIsCapableOfEvolving ? `could evolve ${evolvableCount} of them` : 'Can\'t evolve';

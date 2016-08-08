@@ -26,6 +26,7 @@ export default {
 
   toLocalPokemon(remotePokemon) {
     const {
+      id,
       cp,
       pokemon_id,
       individual_attack,
@@ -40,6 +41,7 @@ export default {
 
     const pokemonIndex = parseInt(pokemon_id, 10) - 1;
     return new Pokemon({
+      id,
       cp,
       pokemonIndex,
       pokemonID: pokemon_id,

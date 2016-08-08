@@ -5,10 +5,13 @@ import utils from '../utils';
 import logUtils from '../logUtils';
 import groupBy from 'lodash/groupBy';
 import InventoryPruner from '../InventoryPruner';
+import PokemonPruner from '../PokemonPruner';
 import async from 'async';
 import jsonfile from 'jsonfile';
 
 const delayBetweenItems = 3000;
+// const delayBetweenEvolves = 20000;
+const delayBetweenEvolves = 5000;
 
 export default class InventoryWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -23,28 +26,47 @@ export default class InventoryWorker extends TickWorker {
   }
 
   act() {
-    const {client, state} = this;
-    client.getInventory(0)
-      .then(rawInventory => {
-        if (!rawInventory.success) reject('success=false in inventory response');
+    console.log(`InventoryWorker act!`);
+    const {client} = this;
+    this.bot.pauseUntil(new Promise(resolve => {
+      client.getInventory(0)
+        .then(rawInventory => {
+          if (!rawInventory.success) reject('success=false in inventory response');
 
-        console.log('Inventory successful'.green);
-        const inventory = pogobuf.Utils.splitInventory(rawInventory);
-        // state.inventory.rawInventory = inventory;
+          console.log('Inventory successful'.green);
+          const inventory = pogobuf.Utils.splitInventory(rawInventory);
+          // state.inventory.rawInventory = inventory;
 
-        this.processItems(inventory);
-        this.processPokemon(inventory);
-        this.processCandies(inventory);
+          this.processItems(inventory);
+          this.processPokemon(inventory);
+          this.processCandies(inventory);
 
-        // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
-        // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
-        //   if (err) console.error(['Failed to save state: ' + err,
-        //     state]);
-        // });
+          // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
+          // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
+          //   if (err) console.error(['Failed to save state: ' + err,
+          //     state]);
+          // });
 
-        // Check if we should throw anything away..
-        this.doRecycleItems();
-      });
+          // Check if we should throw anything away..
+          this.doRecycleItems()
+            .then(() => {
+              return new Promise(resolve => setTimeout(resolve, 3000));
+            })
+            .then(() => {
+              return this.doPokemonEvolving();
+            })
+            .then(() => {
+              console.log('Done evolving!'.green);
+              resolve();
+            })
+            .catch(() => {
+              console.log('Something went wrong in InventoryWorker!'.red);
+              resolve();
+            });
+        });
+    }));
+
+
   }
 
   processItems(inventory) {
@@ -115,38 +137,66 @@ export default class InventoryWorker extends TickWorker {
     const throwAwayItems = InventoryPruner.getThrowAwayItemsSubset(items, throwAwayCountByType);
 
     if (throwAwayItems.length === 0) {
-      return console.log('Keeping all items, bag not full');
+      console.log('Keeping all items, bag not full');
+      return Promise.resolve();
     }
 
     // Pause for a moment before recycling
     this.bot.pause(2000);
 
-    async.eachSeries(throwAwayItems, (item, cb) => {
-      const count = item.count;
-      const name = logUtils.getItemNameString(item.name);
-      console.log(`Recycling ${count} ${name}...`);
+    return new Promise(resolve => {
+      async.eachSeries(throwAwayItems, (item, cb) => {
+        const count = item.count;
+        const name = logUtils.getItemNameString(item.name);
+        console.log(`Recycling ${count} ${name}...`);
 
-      this.bot.pause(delayBetweenItems);
-      client.recycleInventoryItem(item.id, count)
-        .then(response => {
-          if (response.result === 1) {
-            console.log(`Recycled ${count} ${name}`.toString().green);
-            state.inventory.itemsById[item.id].count = response.new_count;
-          } else {
-            console.log(`Failed to recyle ${count} ${name}`.toString().red);
-          }
-          setTimeout(cb, delayBetweenItems);
-        });
+        this.bot.pause(delayBetweenItems);
+        client.recycleInventoryItem(item.id, count)
+          .then(response => {
+            if (response.result === 1) {
+              console.log(`Recycled ${count} ${name}`.toString().green);
+              state.inventory.itemsById[item.id].count = response.new_count;
+            } else {
+              console.log(`Failed to recyle ${count} ${name}`.toString().red);
+            }
+            setTimeout(cb, delayBetweenItems);
+          });
+      }, resolve);
     });
   }
 
-  doPokemonPruning() {
-    // Overall Pokemon management
+  // Overall Pokemon management
+  doPokemonEvolving() {
+    const {client, state} = this;
+    // console.log('Pokemon Management'.yellow);
 
     // For each type of pokemon we want to know
     // if we have all the evolutions. If not, save
     // enough candies to get the farthest evolution.
     // See how many candies we have for each pokemon type
-    //
+
+    return new Promise(resolve => {
+      const pruneResults = PokemonPruner.prune(state.inventory);
+      const {pokemonToEvolve} = pruneResults;
+
+      console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
+
+      async.eachSeries(pokemonToEvolve, (pokemon, cb) => {
+        console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}...`);
+
+        this.bot.pause(1000);
+        client.evolvePokemon(pokemon.id)
+          .then(response => {
+            if (response.result === 1) {
+              const newPokemonData = utils.toLocalPokemon(response.evolved_pokemon_data);
+              console.log(`Evolved ${logUtils.getPokemonNameString(pokemon)} to ${logUtils.getPokemonNameString(newPokemonData)}`.toString().green);
+              console.log(`Got ${response.experience_awarded.toString().green} xp and ${response.candy_awarded.toString().green} candy`);
+            } else {
+              console.log(`Failed to evolve ${logUtils.getPokemonNameString(pokemon)}`.toString().red);
+            }
+            setTimeout(cb, delayBetweenEvolves);
+          });
+      }, resolve);
+    });
   }
 }
