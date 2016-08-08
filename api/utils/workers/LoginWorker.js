@@ -19,7 +19,7 @@ export default class LoginWorker extends TickWorker {
 
     console.log(`Logging in...`.toString().yellow);
     this.bot.pauseUntil(new Promise(resolve => {
-      const login = new pogobuf.PTCLogin();
+      const login = this.getLogin();
       login.login(env.username, env.password)
         .then(token => {
           console.log(`Got login token ${token}`.toString().green);
@@ -29,7 +29,7 @@ export default class LoginWorker extends TickWorker {
           this.bot.params.client = client;
           this.bot.updateWorkers();
 
-          client.setAuthInfo('ptc', token);
+          client.setAuthInfo(env.loginProvider, token);
           client.setPosition(latLng.lat, latLng.lng);
           client.setMaxTries(1); // debugging!
           return client.init();
@@ -46,5 +46,15 @@ export default class LoginWorker extends TickWorker {
           resolve();
         });
     }));
+  }
+
+  getLogin() {
+    if (env.loginProvider === 'google') {
+      return new pogobuf.GoogleLogin();
+    } else if (env.loginProvider === 'ptc') {
+      return new pogobuf.PTCLogin();
+    } else {
+      console.error(`Unknown loginProvider '${env.loginProvider}'`);
+    }
   }
 }

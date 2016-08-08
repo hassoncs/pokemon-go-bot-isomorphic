@@ -10,6 +10,7 @@ import async from 'async';
 import jsonfile from 'jsonfile';
 import Long from 'long';
 import Promise from 'bluebird';
+const env = require('../../../env');
 
 const delayBetweenItems = 3000;
 // const delayBetweenEvolves = 20000;
@@ -263,7 +264,7 @@ export default class InventoryWorker extends TickWorker {
   doPokemonTransferring() {
     const {client, state} = this;
     return new Promise(resolve => {;
-      const pokemons = PokemonPruner.getPokemonToTransfer(state.inventory);
+      const pokemons = PokemonPruner.getPokemonToTransfer(state.inventory, env.maxTransferCP);
       if (pokemons.length === 0) {
         console.log('No pokemon to transfer'.yellow);
         return resolve();
