@@ -25,7 +25,7 @@ export default class PokemonCatchingWorker extends TickWorker {
   act() {
     const {state} = this;
     const encounters = state.mapSummary.encounters;
-    console.log(`There are ${encounters.length} pokemon that I could catch`);
+    // console.log(`There are ${encounters.length} pokemon that I could catch`);
     if (encounters.length === 0) return;
 
     const pokeballItemID = this.getPokeballItemID();
@@ -155,7 +155,6 @@ export default class PokemonCatchingWorker extends TickWorker {
     };
     // console.log(`Using catch options...`);
     // console.log(JSON.stringify(catchOptions));
-
     return catchOptions;
   }
 
