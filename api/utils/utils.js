@@ -1,9 +1,9 @@
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 import pokemonList from '../data/pokemon';
-import extend from 'lodash/extend';
 import groupBy from 'lodash/groupBy';
 import itemData from '../data/itemData';
+import Pokemon from '../models/Pokemon';
 const itemDataByItemId = groupBy(itemData, 'id');
 
 export default {
@@ -56,11 +56,3 @@ export default {
     });
   }
 };
-
-
-class Pokemon {
-  constructor(data) {
-    extend(this, data);
-    this.pokedex = pokemonList[this.pokemonIndex];
-  }
-}

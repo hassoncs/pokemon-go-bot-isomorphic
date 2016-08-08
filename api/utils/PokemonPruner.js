@@ -52,6 +52,36 @@ class PokemonPruner {
 
     return pokemonToEvolve;
   }
+
+  getPokemonToTransfer(inventory) {
+    const pokemonsByIndex = groupBy(inventory.pokemons, 'pokemonIndex');
+
+    const pokemonToRelease = [];
+    Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
+      const pokemons = pokemonsByIndex[pokemonIndex];
+      const cpSortedPokemons = sortBy(pokemons, 'cp').reverse();
+      const ivSortedPokemons = sortBy(pokemons, (p) => p.getIV()).reverse();
+      const representativePokemon = cpSortedPokemons[0];
+      const pokedex = representativePokemon.pokedex;
+      const count = cpSortedPokemons.length;
+      if (!pokedex || count <= 1) return;
+
+      const name = pokedex.Name;
+      const pokemonHighestCP = cpSortedPokemons[0];
+      const pokemonHighestIV = ivSortedPokemons[0];
+      // console.log(`High CP ${pokemonHighestCP.cp}, high IV ${pokemonHighestIV.getIV()}`);
+
+      const releasablePokemon = pokemons.filter((pokemon) => {
+        return (pokemon !== pokemonHighestCP && pokemon !== pokemonHighestIV);
+      });
+
+      if (releasablePokemon.length === 0) return;
+      console.log(`Releasing ${releasablePokemon.length}/${pokemons.length} ${name}`);
+
+      pokemonToRelease.push.apply(pokemonToRelease, releasablePokemon);
+    });
+    return pokemonToRelease;
+  }
 }
 
 export default new PokemonPruner();

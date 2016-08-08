@@ -57,7 +57,7 @@ import PokemonCatchingWorker from './workers/PokemonCatchingWorker';
 const TICK_INTERVAL = 1000;
 
 class Bot {
-  constructor({state, client}) {
+  constructor({state}) {
     this.state = state;
   }
 
@@ -85,6 +85,12 @@ class Bot {
     this._lastTickEpoch = Date.now();
     // console.log(['tick.', elapsedMsSinceTick]);
 
+    if (this.pausePromise) {
+      // console.log(`Skipping tick, a worker locked the bot.`);
+      setTimeout(() => this.tick(), TICK_INTERVAL);
+      return;
+    }
+
     // Update workers
     this._workers.forEach((worker) => worker.didTick(elapsedMsSinceTick));
 
@@ -98,6 +104,15 @@ class Bot {
   updateWorkers() {
     this._workers.forEach(worker => {
       worker.client = this.params.client;
+    });
+  }
+
+  // Pause until this promise is resolved.
+  pauseUntil(promise) {
+    this.pausePromise = promise;
+    promise.then(() => {
+      // console.log(`Unlocking the bot clock.`);
+      this.pausePromise = null;
     });
   }
 }

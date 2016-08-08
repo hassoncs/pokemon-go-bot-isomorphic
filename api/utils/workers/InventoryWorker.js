@@ -13,6 +13,7 @@ import Promise from 'bluebird';
 const delayBetweenItems = 3000;
 // const delayBetweenEvolves = 20000;
 const delayBetweenEvolves = 5000;
+const delayBetweenTransfers = 3000;
 
 export default class InventoryWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -53,8 +54,10 @@ export default class InventoryWorker extends TickWorker {
             .bind(this)
             .delay(3000)
             .then(this.doPokemonEvolving)
+            .delay(3000)
+            .then(this.doPokemonTransferring)
             .then(() => {
-              console.log('Done evolving!'.green);
+              console.log('Done evolving and transferring!'.green);
               resolve();
             })
             .catch((e) => {
@@ -189,6 +192,33 @@ export default class InventoryWorker extends TickWorker {
               console.log(`Failed to evolve ${logUtils.getPokemonNameString(pokemon)}`.toString().red);
             }
             setTimeout(cb, delayBetweenEvolves);
+          });
+      }, resolve);
+    });
+  }
+
+  doPokemonTransferring() {
+    const {client, state} = this;
+    return new Promise(resolve => {
+      const pokemons = PokemonPruner.getPokemonToTransfer(state.inventory);
+      if (pokemons.length === 0) {
+        console.log('No pokemon to transfer'.yellow);
+        return resolve();
+      }
+
+      console.log(`Transferring ${pokemons.length} pokemon`.toString().yellow);
+      async.eachSeries(pokemons, (pokemon, cb) => {
+        console.log(`Transferring ${logUtils.getPokemonNameString(pokemon)}...`);
+
+        client.releasePokemon(pokemon.id)
+          .then(response => {
+            if (response.result === 1) {
+              console.log(`Transferred ${logUtils.getPokemonNameString(pokemon)}`.toString().green);
+              console.log(`Got ${response.candy_awarded.toString().green} candy`);
+            } else {
+              console.log(`Failed to transfer ${logUtils.getPokemonNameString(pokemon)}`.toString().red);
+            }
+            setTimeout(cb, delayBetweenTransfers);
           });
       }, resolve);
     });
