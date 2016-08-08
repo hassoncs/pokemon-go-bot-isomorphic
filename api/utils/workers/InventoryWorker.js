@@ -10,6 +10,7 @@ import async from 'async';
 import jsonfile from 'jsonfile';
 import Long from 'long';
 import Promise from 'bluebird';
+import levelXP from '../../data/levelXP';
 const env = require('../../../env');
 
 const delayBetweenItems = 3000;
@@ -44,11 +45,11 @@ export default class InventoryWorker extends TickWorker {
               const inventory = pogobuf.Utils.splitInventory(rawInventory);
               state.inventory.rawInventory = inventory;
 
+              this.processPlayer(inventory);
               this.processItems(inventory);
               this.processPokemon(inventory);
               this.processCandies(inventory);
               this.processAppliedItems(inventory);
-              this.processPlayer(inventory);
 
               // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
               // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
@@ -178,19 +179,24 @@ export default class InventoryWorker extends TickWorker {
 
     const {state} = this;
     const playerData = inventory.player;
-    const nextLevelXp = toNumber(playerData.next_level_xp);
+    const nextLevelXP = toNumber(playerData.next_level_xp);
     const experience = toNumber(playerData.experience);
-    const prevLevelXP = toNumber(playerData.prev_level_xp);
     const player = {
       level: playerData.level,
-      nextLevelXp,
+      nextLevelXP,
       experience,
-      prevLevelXP,
     };
     state.inventory.player = player;
-    console.log('Player data');
-    console.log(player);
-    console.log((experience / nextLevelXp * 100).toFixed(0));
+
+    const levelIndex = playerData.level - 1;
+    const levelData = levelXP[levelIndex];
+    const totalXPForCurrentLevel = levelData.xpTotal;
+    const currentLevelXP = experience - totalXPForCurrentLevel;
+    const xpNeededForNextLevel = nextLevelXP - totalXPForCurrentLevel;
+
+    console.log('Player Status');
+    console.log(`Level ${playerData.level}, (${currentLevelXP}/${xpNeededForNextLevel})`);
+    console.log(`${(currentLevelXP / xpNeededForNextLevel * 100).toFixed(1)}% to next level!`);
   }
 
   doRecycleItems() {
