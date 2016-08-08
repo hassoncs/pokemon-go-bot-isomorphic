@@ -5,6 +5,7 @@ import utils from '../utils';
 import logUtils from '../logUtils';
 import InventoryPruner from '../InventoryPruner';
 import async from 'async';
+import Promise from 'bluebird';
 
 // Wait time after encountering the pokemon before you can catch them
 const pauseDurationBeforeCatching = 6000;
@@ -12,7 +13,7 @@ const pauseDurationBeforeCatching = 6000;
 export default class PokemonCatchingWorker extends TickWorker {
   constructor({state, client, bot}) {
     super({state, client, bot});
-    this._pausedTimeMs = 15000;
+    this._pausedTimeMs = 5000;
   }
 
   getConfig() {
@@ -24,22 +25,26 @@ export default class PokemonCatchingWorker extends TickWorker {
   act() {
     const {state} = this;
     const encounters = state.mapSummary.encounters;
+    console.log(`There are ${encounters.length} pokemon that I could catch`);
     if (encounters.length === 0) return;
 
     const pokeballItemID = this.getPokeballItemID();
     if (!pokeballItemID) return console.log('Out of pokeballs! Skipping catching.'.red);
 
-    this.encounterPokemon(encounters[0]);
+    this.bot.pauseUntil(new Promise(resolve => {
+      async.eachSeries(encounters, (encounter, cb) => {
+        return this.encounterPokemon(encounter).then(cb);
+      }, resolve);
+    }));
   }
 
   encounterPokemon(encounter) {
     const {client, state} = this;
-    this.bot.pause(this.getConfig().actEvery * 3);
     const {encounterID, spawnPointID} = encounter;
 
     const data = {};
     state.mapSummary.encounters = state.mapSummary.encounters.filter(p => p !== encounter);
-    client.encounter(encounterID, spawnPointID)
+    return client.encounter(encounterID, spawnPointID)
       .then(encounterResponse => {
         // console.log(`encounterResponse`);
         // console.log(JSON.stringify(encounterResponse));
@@ -68,67 +73,78 @@ export default class PokemonCatchingWorker extends TickWorker {
   catchPokemon(encounter, encounterResponse, pokemon) {
     const {client} = this;
     const {encounterID, spawnPointID} = encounter;
-    const {
-      pokeballItemID,
-      normalizedReticleSize,
-      hitPokemon,
-      spinModifier,
-      normalizedHitPosition,
-    } = this.getCatchOptions();
 
-    var catchReponse = null;
-    async.doWhilst((cb) => {
-      this.bot.pause(pauseDurationBeforeCatching);
-      new Promise(resolve => setTimeout(resolve, pauseDurationBeforeCatching))
-        .then(() => {
-          return client.catchPokemon(
-            encounterID,
-            pokeballItemID,
-            normalizedReticleSize,
-            spawnPointID,
-            hitPokemon,
-            spinModifier,
-            normalizedHitPosition
-          );
-        })
-        .then((response) => {
-          // console.log(`Got a catch response`);
-          // console.log(response);
-          catchReponse = response;
-          cb(null);
-        });
-    }, () => {
-      const {status, capture_award} = catchReponse;
-      if (catchReponse === null) {
-        return true;
-      } else if (status === 0) {
-        console.log(`Catch error`.toString().red);
-        return false;
-      } else if (status === 1) {
-        const {cp, pokedex} = pokemon;
-        console.log(`Caught ${logUtils.getPokemonNameString(pokemon)}`.toString().green);
+    return new Promise(resolve => {
+      var catchReponse = null;
+      async.doWhilst((cb) => {
+        Promise.delay(pauseDurationBeforeCatching)
+          .then(() => {
+            const {
+              pokeballItemID,
+              normalizedReticleSize,
+              hitPokemon,
+              spinModifier,
+              normalizedHitPosition,
+            } = this.getCatchOptions();
+            if (!pokeballItemID) {
+              console.log('Out of pokeballs! Skipping catching.'.red);
+              return Promise.resolve();
+            }
+            return client.catchPokemon(
+              encounterID,
+              pokeballItemID,
+              normalizedReticleSize,
+              spawnPointID,
+              hitPokemon,
+              spinModifier,
+              normalizedHitPosition
+            ).timeout(10000);
+          })
+          .then((response) => {
+            // console.log(`Got a catch response`);
+            // console.log(response);
+            catchReponse = response;
+            cb(null);
+            return null;
+          })
+          .catch(Promise.TimeoutError, (e) => {
+            console.log('Catching the pokemon timed out', e);
+            catchReponse = null;
+            cb(null);
+            return null;
+          });
+      }, () => {
+        const {status, capture_award} = catchReponse || {};
+        if (catchReponse === null) {
+          return true;
+        } else if (status === 0) {
+          console.log(`Catch error`.toString().red);
+          return false;
+        } else if (status === 1) {
+          const {cp, pokedex} = pokemon;
+          console.log(`Caught ${logUtils.getPokemonNameString(pokemon)}`.toString().green);
 
-        const totalXP = capture_award.xp.reduce((sum, xp) => {
-          sum += xp;
-          return sum;
-        }, 0);
-        console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
+          const totalXP = capture_award.xp.reduce((sum, xp) => {
+            sum += xp;
+            return sum;
+          }, 0);
+          console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
 
-        return false;
-      } else if (status === 2) {
-        console.log(`Pokemon broke free! Trying again...`.toString().yellow);
-        return true;
-      } else if (status === 3) {
-        console.log(`Pokemon fled!`.toString().yellow);
-        return false;
-      }
-    }, () => {
+          return false;
+        } else if (status === 2) {
+          console.log(`Pokemon broke free! Trying again...`.toString().yellow);
+          return true;
+        } else if (status === 3) {
+          console.log(`Pokemon fled!`.toString().yellow);
+          return false;
+        }
+      }, resolve);
     });
   }
 
   getCatchOptions() {
-    const spinModifier = Math.random() * 0.85;
-    const normalizedReticleSize = 1 + Math.random() * 0.95;
+    const spinModifier = 0.25 + Math.random() * 0.6;
+    const normalizedReticleSize = 1.1 + Math.random() * 0.85;
     const normalizedHitPosition = 1.0;
     const catchOptions = {
       spinModifier,

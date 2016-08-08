@@ -29,41 +29,65 @@ export default class InventoryWorker extends TickWorker {
 
   act() {
     console.log(`InventoryWorker act!`);
-    const {client} = this;
+    const {client, state} = this;
     this.bot.pauseUntil(new Promise(resolve => {
-      client.getInventory(0)
-        .then(rawInventory => {
-          if (!rawInventory.success) reject('success=false in inventory response');
-
-          console.log('Inventory successful'.green);
-          const inventory = pogobuf.Utils.splitInventory(rawInventory);
-          // state.inventory.rawInventory = inventory;
-
-          this.processItems(inventory);
-          this.processPokemon(inventory);
-          this.processCandies(inventory);
-
-          // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
-          // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
-          //   if (err) console.error(['Failed to save state: ' + err,
-          //     state]);
-          // });
-
-          // Check if we should throw anything away..
-          this.doRecycleItems()
-            .bind(this)
+      Promise.delay(3000)
+        .then(() => {
+          return client.getInventory(0)
             .delay(3000)
-            .then(this.doPokemonEvolving)
-            .delay(3000)
-            .then(this.doPokemonTransferring)
-            .then(() => {
-              console.log('Done evolving and transferring!'.green);
-              resolve();
-            })
-            .catch((e) => {
-              console.log('Something went wrong in InventoryWorker!'.red);
-              console.log(e);
-              resolve();
+            .then(rawInventory => {
+              if (!rawInventory.success) reject('success=false in inventory response');
+
+              console.log('Inventory successful'.green);
+              const inventory = pogobuf.Utils.splitInventory(rawInventory);
+              // state.inventory.rawInventory = inventory;
+
+              this.processItems(inventory);
+              this.processPokemon(inventory);
+              this.processCandies(inventory);
+
+              // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
+              // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
+              //   if (err) console.error(['Failed to save state: ' + err,
+              //     state]);
+              // });
+
+              const backpackFullnessPercent = state.inventory.itemCount / state.inventory.maxItemCount;
+              const hasTooManyItems = (backpackFullnessPercent >= .9);
+
+              let recycleItemsPromise = Promise.resolve;
+              if (hasTooManyItems) {
+                recycleItemsPromise = this.doRecycleItems.bind(this);
+              }
+
+              let evolvePokemonPromise = Promise.resolve;
+              if (false /* Dont evolve them for now*/) {
+                evolvePokemonPromise = this.doPokemonEvolving.bind(this);
+              }
+
+              let transferPokemonPromise = Promise.resolve;
+              const pokemonFullnessPercent = state.inventory.pokemonSummary.count /  state.inventory.pokemonSummary.maxCount;
+              const hasTooManyPokemon = (pokemonFullnessPercent >= .95);
+              if (hasTooManyPokemon) {
+                transferPokemonPromise = this.doPokemonTransferring.bind(this);
+              }
+
+              // Check if we should throw anything away..
+              return recycleItemsPromise()
+                .bind(this)
+                .delay(3000)
+                .then(evolvePokemonPromise)
+                .delay(3000)
+                .then(transferPokemonPromise)
+                .then(() => {
+                  console.log('Done evolving and transferring!'.green);
+                  resolve();
+                })
+                .catch((e) => {
+                  console.log('Something went wrong in InventoryWorker!'.red);
+                  console.log(e);
+                  resolve();
+                });
             });
         });
     }));
@@ -72,7 +96,7 @@ export default class InventoryWorker extends TickWorker {
   processItems(inventory) {
     const {state} = this;
     const items = utils.toLocalItems(inventory.items);
-    logUtils.logItems(items);
+    // logUtils.logItems(items);
 
     const itemsById = {};
     items.map(item => itemsById[item.id] = item);
@@ -82,6 +106,8 @@ export default class InventoryWorker extends TickWorker {
 
     let itemCount = 0;
     items.forEach(item => itemCount += item.count);
+    state.inventory.itemCount = itemCount;
+    state.inventory.maxItemCount = 350; // TODO: Don't hardcode this :)
 
     console.log(`Player has ${itemCount} items`.toString().green);
   }
@@ -95,16 +121,17 @@ export default class InventoryWorker extends TickWorker {
     state.inventory.pokemons = localPokemons;
 
     const pokemonsByIndex = groupBy(localPokemons, 'pokemonIndex');
-    Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
-      const pokemons = pokemonsByIndex[pokemonIndex];
-      const count = pokemons.length;
-      const name = (pokemons[0].pokedex || {}).Name || 'Egg?';
-      console.log(`#${pokemonIndex}) ${count}x ${name}`);
-    });
+    // Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
+    //   const pokemons = pokemonsByIndex[pokemonIndex];
+      // const count = pokemons.length;
+      // const name = (pokemons[0].pokedex || {}).Name || 'Egg?';
+      // console.log(`#${pokemonIndex}) ${count}x ${name}`);
+    // });
 
     // Pokemon processing
     state.inventory.pokemonSummary = {
-      count: localPokemons.length
+      count: localPokemons.length,
+      maxCount: 250, // TODO: Don't hardcode this :)
     };
 
     console.log(`Player has ${localPokemons.length} Pokemon`.toString().green);
