@@ -12,7 +12,7 @@ export default class Item {
     const itemData = itemDataByItemId[data.id];
     extend(this, {
       ...data,
-      name: pogobuf.Utils.getEnumKeyByValue(POGOProtos.Inventory.Item.ItemId, data.id),
+      name: pogobuf.Utils.getEnumKeyByValue(POGOProtos.Inventory.Item.ItemId, data.id).replace('Item ', ''),
       type: itemData && itemData[0] && itemData[0].type || 'special',
     });
   }
