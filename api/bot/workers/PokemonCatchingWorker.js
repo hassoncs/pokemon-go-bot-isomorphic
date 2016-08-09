@@ -28,8 +28,8 @@ export default class PokemonCatchingWorker extends TickWorker {
     // console.log(`There are ${encounters.length} pokemon that I could catch`);
     if (encounters.length === 0) return;
 
-    const pokeballItem = this.getPokeballItem();
-    if (!pokeballItem) return console.log('Out of pokeballs! Skipping catching.'.red);
+    const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
+    if (!Object.keys(ballItems).length) return console.log('Out of pokeballs! Skipping catching.'.red);
 
     this.bot.pauseUntil(new Promise(resolve => {
       async.eachSeries(encounters, (encounter, cb) => {
@@ -55,15 +55,16 @@ export default class PokemonCatchingWorker extends TickWorker {
         if (encounterResponse.status !== 1) return console.log(`Failed to encounter the Pokemon :(`.toString().red);
 
         const {capture_probability} = encounterResponse;
-        const difficulty = capture_probability.reticle_difficulty_scale;
         const probabilities = capture_probability.capture_probability;
         const wildPokemon = encounterResponse.wild_pokemon;
         const remotePokemon = wildPokemon.pokemon_data;
         const pokemon = utils.toLocalPokemon(remotePokemon);
 
         state.encounter.pokemon = pokemon;
+        state.encounter.probabilities = probabilities;
         data.encounterResponse = encounterResponse;
         console.log(`Catching ${logUtils.getPokemonNameString(pokemon)}...`);
+        console.log(`Probs ${probabilities.map(p => (p * 100).toFixed(0)).join('%, ')}%`);
         // console.log(['probabilities',probabilities]);
 
         return this.catchPokemon(encounter, data.encounterResponse, pokemon);
@@ -85,7 +86,7 @@ export default class PokemonCatchingWorker extends TickWorker {
               hitPokemon,
               spinModifier,
               normalizedHitPosition,
-            } = this.getCatchOptions();
+            } = this.getCatchOptions(state.encounter);
             if (!pokeballItem) {
               console.log('Out of pokeballs! Skipping catching.'.red);
               return Promise.resolve();
@@ -99,7 +100,7 @@ export default class PokemonCatchingWorker extends TickWorker {
               hitPokemon,
               spinModifier,
               normalizedHitPosition
-            ).timeout(10000);
+            ).timeout(20000);
           })
           .then((response) => {
             // console.log(`Got a catch response`);
@@ -140,11 +141,11 @@ export default class PokemonCatchingWorker extends TickWorker {
     });
   }
 
-  getCatchOptions() {
+  getCatchOptions(encounter) {
     const spinModifier = 0 + Math.random() * 0.85;
     const normalizedReticleSize = 1.1 + Math.random() * 0.85;
     const normalizedHitPosition = 1.0;
-    const pokeballItem = this.getPokeballItem();
+    const pokeballItem = this.getPokeballItem(encounter);
     const catchOptions = {
       spinModifier,
       normalizedReticleSize,
@@ -157,9 +158,13 @@ export default class PokemonCatchingWorker extends TickWorker {
     return catchOptions;
   }
 
-  getPokeballItem() {
+  getPokeballItem(encounter) {
     const {state} = this;
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
+    if (encounter &&
+      encounter.probabilities &&
+      encounter.probabilities[0] <= 0.5) ballItems.reverse();
+
     for (let i = 0; i < ballItems.length; ++i) {
       return ballItems[0];
     }
