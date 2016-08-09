@@ -52,29 +52,32 @@ export default class PokestopTargetingWorker extends TickWorker {
   targetForts(forts) {
     const {state} = this;
 
-    const data = {};
-    async.whilst(
-      (() => forts.length > 0 && (!data.fort || data.fort.details.fortType === 'Gym')),
-      (cb) => {
-        const fort = data.fort = forts.shift();
-        if (!fort) return;
+    this.bot.pauseUntil(new Promise(resolve => {
+      const data = {};
+      async.whilst(
+        (() => forts.length > 0 && (!data.fort || data.fort.details.fortType === 'Gym')),
+        (cb) => {
+          const fort = data.fort = forts.shift();
+          if (!fort) return;
 
-        (fort.details ?
-          Promise.resolve(fort.details) : this.getFortDetails(fort)
-        ).then((details) => {
-          fort.details = details;
-          console.log(`Welcome to ${details.name}${details.description ? ', ' : ''}${details.description}`.toString().green);
-        }).then(cb);
-      },
-      () => {
-        if (!data.fort) return;
-        const {fort} = data;
-        console.log(`Targeting closest pokestop, ${fort.distanceToPlayer.toFixed(2)}m away, score of ${fort.score.toFixed(0)}`);
+          (fort.details ?
+              Promise.resolve(fort.details) : this.getFortDetails(fort)
+          ).then((details) => {
+            fort.details = details;
+            console.log(`Welcome to ${details.name}${details.description ? ', ' : ''}${details.description}`.toString().green);
+          }).then(cb);
+        },
+        () => {
+          if (!data.fort) return resolve();
+          const {fort} = data;
+          console.log(`Targeting closest pokestop, ${fort.distanceToPlayer.toFixed(2)}m away, score of ${fort.score.toFixed(0)}`);
 
-        // Set the target
-        state.target.targetFortId = fort.id;
-        state.movement.targetLatLng = {lat: fort.latitude, lng: fort.longitude};
-      });
+          // Set the target
+          state.target.targetFortId = fort.id;
+          state.movement.targetLatLng = {lat: fort.latitude, lng: fort.longitude};
+          resolve();
+        });
+    }));
   }
 
   getFortDetails(fort) {
