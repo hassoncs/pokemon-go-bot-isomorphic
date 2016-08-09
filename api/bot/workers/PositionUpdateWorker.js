@@ -73,6 +73,7 @@ export default class PositionUpdateWorker extends TickWorker {
         .then((searchDetails) => {
           state.target.targetFortId = null;
 
+          setTimeout(resolve, 0);
           const xp = searchDetails.experience_awarded;
           if (searchDetails.result === 0) return console.log(`Pokestop search failed, try again later :(`.toString().red);
           if (searchDetails.result === 1) console.log(`Pokestop search successful`.toString().green);
@@ -94,7 +95,6 @@ export default class PositionUpdateWorker extends TickWorker {
           state.target.last = last;
           // console.log(`Done Spinning fort ${fort.details.name}`, last);
           state.target.targetFortId = null;
-          resolve();
         }, resolve);
     }));
   }
