@@ -29,6 +29,17 @@ const target = extend({
   fortsHistory: {},
 }, prevState && prevState.target);
 
+const mapSummary = extend({
+  forts: [],
+  fortsByIds: {},
+  fort_summaries: [],
+}, prevState && prevState.mapSummary, {
+  encounters: [],
+  spawn_points: [],
+  wild_pokemons: [],
+  decimated_spawn_points: [],
+});
+
 const state = extend({
   target,
   movement,
@@ -36,15 +47,7 @@ const state = extend({
     items: [],
     itemsById: {},
   },
-  mapSummary: {
-    decimated_spawn_points: [],
-    fort_summaries: [],
-    forts: [],
-    encounters: [],
-    spawn_points: [],
-    wild_pokemons: [],
-    fortsByIds: {},
-  },
+  mapSummary,
   loggedIn: false,
 });
 

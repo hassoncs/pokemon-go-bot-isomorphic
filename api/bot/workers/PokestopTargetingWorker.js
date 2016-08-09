@@ -1,6 +1,9 @@
 import TickWorker from './TickWorker';
 import sortBy from 'lodash/sortBy';
-import { distanceBetweenLatLngs, randomLatLng } from '../utils/geo';
+import pogobuf from 'pogobuf';
+import async from 'async';
+import POGOProtos from 'node-pogo-protos';
+import {distanceBetweenLatLngs, randomLatLng} from '../utils/geo';
 const colors = require('colors/safe');
 
 const POKESTOP_SPIN_WAIT = 5 * 60 * 1000; // 5 mins
@@ -43,14 +46,47 @@ export default class PokestopTargetingWorker extends TickWorker {
     // sortedForts.forEach((fort, i) => {
     //   console.log(`${i}) ${fort.id} = ${fort.score}`);
     // });
+    this.targetForts(sortedForts);
+  }
 
-    const closestFort = sortedForts[0];
-    if (!closestFort) return;
+  targetForts(forts) {
+    const {state} = this;
 
-    console.log(`Targeting closest fort, ${closestFort.distanceToPlayer.toFixed(2)}m away, score of ${closestFort.score}`);
+    const data = {};
+    async.whilst(
+      (() => forts.length > 0 && (!data.fort || data.fort.details.fortType === 'Gym')),
+      (cb) => {
+        const fort = data.fort = forts.shift();
+        if (!fort) return;
 
-    // Set the target
-    state.target.targetFortId = closestFort.id;
-    state.movement.targetLatLng = {lat: closestFort.latitude, lng: closestFort.longitude};
+        (fort.details ?
+          Promise.resolve(fort.details) : this.getFortDetails(fort)
+        ).then((details) => {
+          fort.details = details;
+          console.log(`Welcome to ${details.name}${details.description ? ', ' : ''}${details.description}`.toString().green);
+        }).then(cb);
+      },
+      () => {
+        if (!data.fort) return;
+        const {fort} = data;
+        console.log(`Targeting closest pokestop, ${fort.distanceToPlayer.toFixed(2)}m away, score of ${fort.score.toFixed(0)}`);
+
+        // Set the target
+        state.target.targetFortId = fort.id;
+        state.movement.targetLatLng = {lat: fort.latitude, lng: fort.longitude};
+      });
+  }
+
+  getFortDetails(fort) {
+    const {client} = this;
+    console.log(`Getting pokestop details ${fort.id}`);
+    return client.fortDetails(fort.id, fort.latitude, fort.longitude)
+      .then((details) => {
+        if (!details) return Promise.reject();
+
+        const fortType = pogobuf.Utils.getEnumKeyByValue(POGOProtos.Map.Fort.FortType, details.type);
+        details.fortType = fortType;
+        return Promise.resolve(details);
+      });
   }
 }
