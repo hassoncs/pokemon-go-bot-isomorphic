@@ -17,6 +17,7 @@ class Bot {
   constructor({state}) {
     this.state = state;
     this.client = new PogoClient({state});
+    this.pausePromises = [];
   }
 
   start() {
@@ -43,8 +44,8 @@ class Bot {
     this._lastTickEpoch = Date.now();
     // console.log(['tick.', elapsedMsSinceTick]);
 
-    if (this.pausePromise) {
-      // console.log(`Skipping tick, a worker locked the bot.`);
+    if (this.pausePromises.length > 0) {
+      //console.log(`Skipping tick, a worker locked the bot.`);
       setTimeout(() => this.tick(), TICK_INTERVAL);
       return;
     }
@@ -61,10 +62,11 @@ class Bot {
 
   // Pause until this promise is resolved.
   pauseUntil(promise) {
-    this.pausePromise = promise;
+    this.pausePromises.push(promise);
+    //console.log(`Locking the bot. ${this.pausePromises.length}`);
     promise.then(() => {
-      // console.log(`Unlocking the bot clock.`);
-      this.pausePromise = null;
+      this.pausePromises = this.pausePromises.filter(p => p !== promise);
+      //console.log(`Unlocking the bot. ${this.pausePromises.length}`);
     });
   }
 }
