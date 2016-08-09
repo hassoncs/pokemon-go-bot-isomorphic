@@ -36,71 +36,68 @@ export default class InventoryWorker extends TickWorker {
     console.log(`InventoryWorker act!`);
     const {client, state} = this;
     this.bot.pauseUntil(new Promise(resolve => {
-      Promise.delay(3000).then(() => {
-        return client.getInventory(0)
-          .delay(3000)
-          .then(rawInventory => {
-            if (!rawInventory.success) reject('success=false in inventory response');
+      return client.getInventory(0)
+        .then(rawInventory => {
+          if (!rawInventory.success) reject('success=false in inventory response');
 
-            console.log('Inventory successful'.green);
-            const inventory = pogobuf.Utils.splitInventory(rawInventory);
-            state.inventory.rawInventory = inventory;
+          console.log('Inventory successful'.green);
+          const inventory = pogobuf.Utils.splitInventory(rawInventory);
+          state.inventory.rawInventory = inventory;
 
-            this.processPlayer(inventory);
-            this.processItems(inventory);
-            this.processPokemon(inventory);
-            this.processCandies(inventory);
-            this.processAppliedItems(inventory);
-            this.processUpgrades(inventory);
+          this.processPlayer(inventory);
+          this.processItems(inventory);
+          this.processPokemon(inventory);
+          this.processCandies(inventory);
+          this.processAppliedItems(inventory);
+          this.processUpgrades(inventory);
 
-            const activeLuckyEgg = this.hasActiveLuckyEgg();
-            const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
-            //if (!activeLuckyEgg && hasEgg) {
-            //  this.useLuckyEgg().then(() => {
-            //    console.log(['Done using egg!']);
-            //  });
-            //}
+          const activeLuckyEgg = this.hasActiveLuckyEgg();
+          const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
+          //if (!activeLuckyEgg && hasEgg) {
+          //  this.useLuckyEgg().then(() => {
+          //    console.log(['Done using egg!']);
+          //  });
+          //}
 
-            // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
-            // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
-            //   if (err) console.error(['Failed to save state: ' + err,
-            //     state]);
-            // });
+          // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
+          // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
+          //   if (err) console.error(['Failed to save state: ' + err,
+          //     state]);
+          // });
 
-            const backpackFullnessPercent = state.inventory.itemCount / state.inventory.maxItemCount;
-            const hasTooManyItems = (backpackFullnessPercent >= .95);
+          const backpackFullnessPercent = state.inventory.itemCount / state.inventory.maxItemCount;
+          const hasTooManyItems = (backpackFullnessPercent >= .95);
 
-            let recycleItemsPromise = Promise.resolve;
-            if (hasTooManyItems) {
-              recycleItemsPromise = this.doRecycleItems.bind(this);
-            }
+          let recycleItemsPromise = Promise.resolve;
+          if (hasTooManyItems) {
+            recycleItemsPromise = this.doRecycleItems.bind(this);
+          }
 
-            let evolvePokemonPromise = this.doPokemonEvolving.bind(this, !activeLuckyEgg);
+          let evolvePokemonPromise = this.doPokemonEvolving.bind(this, !activeLuckyEgg);
 
-            let transferPokemonPromise = Promise.resolve;
-            const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
-            const hasTooManyPokemon = true; //(pokemonFullnessPercent >= .95);
-            if (hasTooManyPokemon) {
-              transferPokemonPromise = this.doPokemonTransferring.bind(this);
-            }
+          let transferPokemonPromise = Promise.resolve;
+          const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
+          const hasTooManyPokemon = true; //(pokemonFullnessPercent >= .95);
+          if (hasTooManyPokemon) {
+            transferPokemonPromise = this.doPokemonTransferring.bind(this);
+          }
 
-            // Check if we should throw anything away..
-            return recycleItemsPromise()
-              .bind(this)
-              .then(evolvePokemonPromise)
-              .delay(3000)
-              .then(transferPokemonPromise)
-              .then(() => {
-                console.log('Done recycling items and evolving and transferring pokemon');
-                resolve();
-              })
-              .catch((e) => {
-                console.log('Something went wrong in InventoryWorker!'.red);
-                console.log(e);
-                resolve();
-              });
-          });
-      });
+          // Check if we should throw anything away..
+          return recycleItemsPromise()
+            .bind(this)
+            .then(evolvePokemonPromise)
+            .delay(3000)
+            .then(transferPokemonPromise)
+            .then(() => {
+              console.log('Done recycling items and evolving and transferring pokemon');
+              resolve();
+            })
+            .catch((e) => {
+              console.log('Something went wrong in InventoryWorker!'.red);
+              console.log(e);
+              resolve();
+            });
+        });
     }));
   }
 
