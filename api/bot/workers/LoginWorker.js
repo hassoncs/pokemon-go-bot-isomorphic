@@ -1,8 +1,9 @@
 import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 const env = require('../../../env');
+import PogoClient from '../pogoClient';
 
-const client = new pogobuf.Client();
+const client = new PogoClient();
 
 export default class LoginWorker extends TickWorker {
   getConfig() {
@@ -29,9 +30,8 @@ export default class LoginWorker extends TickWorker {
           this.bot.params.client = client;
           this.bot.updateWorkers();
 
-          client.setAuthInfo(env.loginProvider, token);
+          client.setAuthInfo(token);
           client.setPosition(latLng.lat, latLng.lng);
-          client.setMaxTries(1); // debugging!
           return client.init();
         })
         .then(() => {
