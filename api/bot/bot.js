@@ -1,7 +1,6 @@
 const pogobuf = require('pogobuf');
 const env = require('../../env');
 const colors = require('colors/safe');
-import LoginWorker from './workers/LoginWorker';
 import StateSaveWorker from './workers/StateSaveWorker';
 import MapSummaryWorker from './workers/MapSummaryWorker';
 import TargetObjectiveWorker from './workers/PokestopTargetingWorker';
@@ -27,7 +26,6 @@ class Bot {
     const {client, state} = this;
     this.params = {client, state, bot: this};
     this._workers = [
-      // new LoginWorker(this.params),
       new PlayerUpdateWorker(this.params),
       new PositionUpdateWorker(this.params),
       new MapSummaryWorker(this.params),
