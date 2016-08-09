@@ -4,6 +4,7 @@ import POGOProtos from 'node-pogo-protos';
 import utils from '../utils';
 import logUtils from '../logUtils';
 import groupBy from 'lodash/groupBy';
+import some from 'lodash/some';
 import InventoryPruner from '../InventoryPruner';
 import PokemonPruner from '../PokemonPruner';
 import async from 'async';
@@ -17,6 +18,8 @@ const delayBetweenItems = 3000;
 // const delayBetweenEvolves = 20000;
 const delayBetweenEvolves = 5000;
 const delayBetweenTransfers = 3000;
+
+const luckyEggItemId = 301;
 
 export default class InventoryWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -51,6 +54,14 @@ export default class InventoryWorker extends TickWorker {
               this.processCandies(inventory);
               this.processAppliedItems(inventory);
 
+              const activeLuckyEgg = this.hasActiveLuckyEgg();
+              const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
+              //if (!activeLuckyEgg && hasEgg) {
+              //  this.useLuckyEgg().then(() => {
+              //    console.log(['Done using egg!']);
+              //  });
+              //}
+
               // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
               // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
               //   if (err) console.error(['Failed to save state: ' + err,
@@ -65,7 +76,7 @@ export default class InventoryWorker extends TickWorker {
                 recycleItemsPromise = this.doRecycleItems.bind(this);
               }
 
-              let evolvePokemonPromise = this.doPokemonEvolving.bind(this);
+              let evolvePokemonPromise = this.doPokemonEvolving.bind(this, !activeLuckyEgg);
 
               let transferPokemonPromise = Promise.resolve;
               const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
@@ -95,6 +106,24 @@ export default class InventoryWorker extends TickWorker {
     }));
   }
 
+  useLuckyEgg() {
+    const {client, state} = this;
+    return new Promise((resolve) => {
+      utils.deltaItem(luckyEggItemId, -1, state.inventory);
+      client.useItemXPBoost(luckyEggItemId)
+        .then(response => {
+          if (response.result === 1) {
+            console.log(`Used lucky egg!`.toString().green);
+            state.inventory.applied_items = [response.applied_items];
+            this.processAppliedItems(state.inventory);
+          } else {
+            console.log(`Failed to use lucky egg`.toString().red);
+          }
+          setTimeout(resolve, 3000);
+        });
+    });
+  }
+
   processItems(inventory) {
     const {state} = this;
     const items = utils.toLocalItems(inventory.items);
@@ -122,7 +151,7 @@ export default class InventoryWorker extends TickWorker {
     });
     state.inventory.pokemons = localPokemons;
 
-    const pokemonsByIndex = groupBy(localPokemons, 'pokemonIndex');
+    //const pokemonsByIndex = groupBy(localPokemons, 'pokemonIndex');
     // Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
     //   const pokemons = pokemonsByIndex[pokemonIndex];
     // const count = pokemons.length;
@@ -162,16 +191,30 @@ export default class InventoryWorker extends TickWorker {
 
   processAppliedItems(inventory) {
     const {state} = this;
-    const appliedItems = inventory.applied_items.map((itemGroup) => {
+    const appliedItems = [];
+    inventory.applied_items.forEach((itemGroup) => {
       const items = itemGroup.item;
       const item = items[0];
       if (item.item_id !== 301) return console.log(`Skipping, not an egg`);
+
       const expireLong = new Long(item.expire_ms.low, item.expire_ms.high, item.expire_ms.unsigned);
       const expirationDate = new Date(expireLong.toNumber());
-      console.log(`Lucky egg is ${(Date.now() > expirationDate.getTime()) ? 'expired!' : 'active'}`);
-      return {};
+      const active = Date.now() <= expirationDate.getTime();
+      if (active) appliedItems.push({...item, active});
+
+      const activeStr = `active until ${expirationDate}`;
+      console.log(`Lucky egg is ${active ? activeStr : 'expired'}`);
     });
     state.inventory.appliedItems = appliedItems;
+  }
+
+  hasActiveLuckyEgg() {
+    const {state} = this;
+    return some(state.inventory.appliedItems, (item) => {
+      const expireLong = new Long(item.expire_ms.low, item.expire_ms.high, item.expire_ms.unsigned);
+      const expirationDate = new Date(expireLong.toNumber());
+      return Date.now() <= expirationDate.getTime();
+    });
   }
 
   processPlayer(inventory) {
@@ -231,7 +274,7 @@ export default class InventoryWorker extends TickWorker {
   }
 
   // Overall Pokemon management
-  doPokemonEvolving() {
+  doPokemonEvolving(skipEvolving) {
     const {client, state} = this;
     return new Promise(resolve => {
       const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
@@ -241,14 +284,12 @@ export default class InventoryWorker extends TickWorker {
       }
 
       // Skip evolving
-      if (true) {
+      if (skipEvolving) {
         console.log(`Could evolve ${pokemonToEvolve.length} pokemon`.toString().yellow);
         return resolve();
       }
 
       console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
-      return resolve();
-
       async.eachSeries(pokemonToEvolve, (pokemon, cb) => {
         console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}`);
 

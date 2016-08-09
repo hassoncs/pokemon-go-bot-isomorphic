@@ -104,6 +104,11 @@ class InventoryPruner {
       .fromPairs()
       .value();
   }
+
+  hasItem(itemId, inventory) {
+    const item = inventory.itemsById[itemId];
+    return item && item.count > 0;
+  }
 }
 
 export default new InventoryPruner();

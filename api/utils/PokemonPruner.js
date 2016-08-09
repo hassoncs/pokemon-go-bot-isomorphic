@@ -3,6 +3,7 @@ import utils from './utils';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
 import sortBy from 'lodash/sortBy';
+import last from 'lodash/last';
 
 class PokemonPruner {
   getPokemonToEvolve(inventory) {
@@ -27,17 +28,29 @@ class PokemonPruner {
       const count = cpSortedPokemons.length;
       const pokedex = representativePokemon.pokedex;
       if (!pokedex) return;
-      const name = pokedex.Name;
-      // console.log(`${count}x ${name}`);
+
+      //const name = pokedex.Name;
+      //console.log(`${count}x ${name}`);
 
       const nextEvoReqs = pokedex['Next Evolution Requirements'];
+      const nextEvos = pokedex['Next evolution(s)'] || [];
       const requiredCandyCount = nextEvoReqs && nextEvoReqs.Amount || 0;
       const candy = candiesByIndex[+pokemonIndex + 1];
       const candyCount = candy && candy.count || 0;
       const pokemonIsCapableOfEvolving = (requiredCandyCount > 0);
       const canEvolve = (pokemonIsCapableOfEvolving && candyCount >= requiredCandyCount);
 
-      if (!canEvolve) return; // console.log(`${name} needs ${requiredCandyCount}, but player only has ${candyCount}`);
+      let hasAllInEvoChain = true;
+      const lastEvo = last(nextEvos);
+      if (lastEvo) {
+        // Do we have a last evo?
+        //console.log(['Checking if we have a ', lastEvo.Name]);
+        const allLastEvoPokemons = pokemonsByIndex[+lastEvo.Number - 1] || [];
+        hasAllInEvoChain = allLastEvoPokemons.length > 0;
+        //console.log(['have last evo? ', hasAllInEvoChain]);
+      }
+
+      if (!canEvolve || !hasAllInEvoChain) return; // console.log(`${name} needs ${requiredCandyCount}, but player only has ${candyCount}`);
       const evolvableCount = Math.min(
         count,
         Math.floor(candyCount / requiredCandyCount)
