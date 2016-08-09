@@ -9,19 +9,22 @@ import PlayerUpdateWorker from './workers/PlayerUpdateWorker';
 import PositionUpdateWorker from './workers/PositionUpdateWorker';
 import InventoryWorker from './workers/InventoryWorker';
 import PokemonCatchingWorker from './workers/PokemonCatchingWorker';
+import PogoClient from './pogoClient';
+
 const TICK_INTERVAL = 1000;
 
 class Bot {
   constructor({state}) {
     this.state = state;
+    this.client = new PogoClient();
   }
 
   start() {
     console.log(colors.red('Starting bot.'));
     this._lastTickEpoch = Date.now();
 
-    const {state} = this;
-    this.params = {state, bot: this};
+    const {client, state} = this;
+    this.params = {client, state, bot: this};
     this._workers = [
       new LoginWorker(this.params),
       new PlayerUpdateWorker(this.params),
@@ -54,12 +57,6 @@ class Bot {
 
   pause(duration) {
     this._lastTickEpoch += duration;
-  }
-
-  updateWorkers() {
-    this._workers.forEach(worker => {
-      worker.client = this.params.client;
-    });
   }
 
   // Pause until this promise is resolved.
