@@ -152,9 +152,8 @@ export default class PokemonCatchingWorker extends TickWorker {
       pokeballItem,
       hitPokemon: true,
     };
-    console.log(`with spin ${catchOptions.spinModifier.toFixed(1)},\
- size: ${catchOptions.normalizedReticleSize.toFixed(2)},\
- with ${pokeballItem.name}`);
+    console.log(`Using a ${pokeballItem.name} with spin ${catchOptions.spinModifier.toFixed(1)},\
+ size: ${catchOptions.normalizedReticleSize.toFixed(2)}`);
     return catchOptions;
   }
 
