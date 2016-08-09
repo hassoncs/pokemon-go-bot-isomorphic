@@ -4,7 +4,7 @@ const colors = require('colors/safe');
 import LoginWorker from './workers/LoginWorker';
 import StateSaveWorker from './workers/StateSaveWorker';
 import MapSummaryWorker from './workers/MapSummaryWorker';
-import TargetObjectiveWorker from './workers/TargetObjectiveWorker';
+import TargetObjectiveWorker from './workers/PokestopTargetingWorker';
 import PlayerUpdateWorker from './workers/PlayerUpdateWorker';
 import PositionUpdateWorker from './workers/PositionUpdateWorker';
 import InventoryWorker from './workers/InventoryWorker';

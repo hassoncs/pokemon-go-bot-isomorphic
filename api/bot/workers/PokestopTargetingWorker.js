@@ -1,18 +1,14 @@
 import TickWorker from './TickWorker';
 import sortBy from 'lodash/sortBy';
+import { distanceBetweenLatLngs, randomLatLng } from '../utils/geo';
 const colors = require('colors/safe');
-
-import {
-  distanceBetweenLatLngs,
-  randomLatLng,
-} from '../utils/geo';
 
 const POKESTOP_SPIN_WAIT = 5 * 60 * 1000; // 5 mins
 
-export default class TargetObjectiveWorker extends TickWorker {
+export default class PokestopTargetingWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 10000,
+      actEvery: 10 * 1000,
     };
   }
 
