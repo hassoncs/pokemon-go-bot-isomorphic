@@ -20,6 +20,7 @@ const delayBetweenEvolves = 5000;
 const delayBetweenTransfers = 3000;
 
 const luckyEggItemId = 301;
+const startEvolvingWhenOverEvolvableCount = 90;
 
 export default class InventoryWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -36,7 +37,9 @@ export default class InventoryWorker extends TickWorker {
     const {client} = this;
     this.bot.pauseUntil(new Promise(resolve => {
       return client.getInventory(0)
+        .bind(this)
         .then(rawInventory => {
+          console.log('Got rawInventory!');
           if (!rawInventory.success) reject('success=false in inventory response');
           return this.processInventory(rawInventory);
         })
@@ -46,14 +49,8 @@ export default class InventoryWorker extends TickWorker {
   }
 
   performInventoryActions() {
+    console.log('performInventoryActions!');
     const {state} = this;
-    const activeLuckyEgg = this.hasActiveLuckyEgg();
-    const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
-    //if (!activeLuckyEgg && hasEgg) {
-    //  this.useLuckyEgg().then(() => {
-    //    console.log(['Done using egg!']);
-    //  });
-    //}
 
     // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
     // jsonfile.writeFile(STATE_FILE_NAME, state.inventory, function (err) {
@@ -69,7 +66,30 @@ export default class InventoryWorker extends TickWorker {
       recycleItemsPromise = this.doRecycleItems.bind(this);
     }
 
-    let evolvePokemonPromise = this.doPokemonEvolving.bind(this, !activeLuckyEgg);
+    const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
+    console.log(`Could evolve ${pokemonToEvolve.length} pokemon`.toString().yellow);
+
+    let evolvePokemonPromise = Promise.resolve;
+    if (pokemonToEvolve.length === 0) {
+      console.log('No pokemon to evolve'.yellow);
+    } else if (pokemonToEvolve.length > startEvolvingWhenOverEvolvableCount) {
+      console.log('Queuing up pokemon evolving actions...'.yellow);
+
+      const activeLuckyEgg = this.hasActiveLuckyEgg();
+      const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
+
+      // Use an egg if you have one before evolving!
+      if (!activeLuckyEgg && hasEgg) {
+        evolvePokemonPromise = () => new Promise(resolve => {
+          return this.useLuckyEgg()
+            .bind(this)
+            .then(this.doPokemonEvolving.bind(this, pokemonToEvolve))
+            .then(resolve, resolve);
+        });
+      } else {
+        evolvePokemonPromise = this.doPokemonEvolving.bind(this, pokemonToEvolve);
+      }
+    }
 
     let transferPokemonPromise = Promise.resolve;
     const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
@@ -106,6 +126,8 @@ export default class InventoryWorker extends TickWorker {
     this.processCandies(inventory);
     this.processAppliedItems(inventory);
     this.processUpgrades(inventory);
+
+    console.log('processInventory DONE!!');
 
     return Promise.resolve();
   }
@@ -290,21 +312,9 @@ export default class InventoryWorker extends TickWorker {
   }
 
   // Overall Pokemon management
-  doPokemonEvolving(skipEvolving) {
-    const {client, state} = this;
+  doPokemonEvolving(pokemonToEvolve) {
+    const {client} = this;
     return new Promise(resolve => {
-      const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
-      if (pokemonToEvolve.length === 0) {
-        console.log('No pokemon to evolve'.yellow);
-        return resolve();
-      }
-
-      // Skip evolving
-      if (skipEvolving) {
-        console.log(`Could evolve ${pokemonToEvolve.length} pokemon`.toString().yellow);
-        return resolve();
-      }
-
       console.log(`Evolving ${pokemonToEvolve.length} pokemon`.toString().yellow);
       async.eachSeries(pokemonToEvolve, (pokemon, cb) => {
         console.log(`Evolving ${logUtils.getPokemonNameString(pokemon)}`);

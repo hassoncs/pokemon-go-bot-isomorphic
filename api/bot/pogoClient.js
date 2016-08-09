@@ -126,6 +126,10 @@ export default class PogoClient {
     return this.delegate('catchPokemon', arguments);
   }
 
+  evolvePokemon() {
+    return this.delegate('evolvePokemon', arguments);
+  }
+
   fortDetails() {
     return this.delegate('fortDetails', arguments);
   }

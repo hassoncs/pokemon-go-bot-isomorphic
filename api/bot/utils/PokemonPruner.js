@@ -21,7 +21,11 @@ class PokemonPruner {
 
     const pokemonsByIndex = groupBy(inventory.pokemons, 'pokemonIndex');
     const pokemonToEvolve = [];
-    Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
+
+    // Reverse the list so we evolve pokemon to the highest evolutions first
+    const reversedPokemonsByIndex = Object.keys(pokemonsByIndex).reverse();
+
+    reversedPokemonsByIndex.forEach(pokemonIndex => {
       const pokemons = pokemonsByIndex[pokemonIndex];
       const cpSortedPokemons = sortBy(pokemons, 'cp').reverse();
       const representativePokemon = cpSortedPokemons[0];
