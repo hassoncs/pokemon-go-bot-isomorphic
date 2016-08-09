@@ -15,6 +15,11 @@ const movement = extend({
 // const s2LatLng = new s2.S2LatLng(initialLatLng.lat, initialLatLng.lng); // Bottom of home curvy hill
 // const latLng = new s2.S2LatLng(37.808836, -122.410013); // Pier 39
 // const latLng = new s2.S2LatLng(37.758735, -122.403586); // Home
+  // Downtown L.A.: 34.049202, -118.245741
+  //currentLatLng: {
+  //  lat: 34.049202,
+  //  lng: -118.245741
+  //},
   currentLatLng: {
     lat: 37.808836,
     lng: -122.410013
@@ -22,7 +27,7 @@ const movement = extend({
   targetLatLng: null,
 }, prevState && prevState.movement, {
   // must be < 20kmph to hatch eggs?
-  speedMps: 4.16, // human speed is 1.4 - 2.5?
+  speedMps: 8.5, // human speed is 1.4 - 2.5?
 });
 
 const target = extend({
