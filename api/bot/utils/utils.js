@@ -56,8 +56,9 @@ export default {
         id: itemId,
         count: delta,
       });
+    } else {
+      item.count = Math.max(0, item.count + delta);
     }
-    item.count = Math.max(0, item.count + delta);
     //return console.log(['New item count', item.name, item.count]);
   },
 };
