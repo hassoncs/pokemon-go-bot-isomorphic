@@ -88,7 +88,6 @@ export default class InventoryWorker extends TickWorker {
               // Check if we should throw anything away..
               return recycleItemsPromise()
                 .bind(this)
-                .delay(3000)
                 .then(evolvePokemonPromise)
                 .delay(3000)
                 .then(transferPokemonPromise)

@@ -1,10 +1,28 @@
 import pogobuf from 'pogobuf';
+import async from 'async';
+import Promise from 'bluebird';
 const env = require('../../env');
 
 export default class PogoClient {
   constructor() {
     this.client = new pogobuf.Client();
     this.client.setMaxTries(1); // debugging!
+
+    this.q = async.queue((task, cb) => {
+      const {name, args, resolve} = task;
+      this.client[name].apply(this.client, Array.from(args))
+        .then((result) => {
+          resolve(result);
+          const areCallsWaiting = this.q.length() > 0;
+          if (areCallsWaiting) console.log(`PogoClient auto queuing calls! ${this.q.length()}`);
+          setTimeout(cb, areCallsWaiting ? 2500 : 0);
+        })
+        .catch((error) => {
+          console.log(`PogoClientWrapper caught an error!`.toString().red);
+          console.error(error);
+          cb();
+        });
+    }, 1);
   }
 
   setAuthInfo(token) {
@@ -20,11 +38,9 @@ export default class PogoClient {
   }
 
   delegate(name, args) {
-    return this.client[name].apply(this.client, Array.from(args))
-      .catch((error) => {
-        console.log(`PogoClientWrapper caught an error!`.toString().red);
-        console.error(error);
-      });
+    return new Promise(resolve => {
+      this.q.push({name, args, resolve});
+    });
   }
 
   getInventory() {
