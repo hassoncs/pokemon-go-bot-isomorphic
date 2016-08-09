@@ -52,7 +52,10 @@ export default class PokemonCatchingWorker extends TickWorker {
           encounterResponse
         };
 
-        if (encounterResponse.status !== 1) return console.log(`Failed to encounter the Pokemon :(`.toString().red);
+        if (encounterResponse.status !== 1) {
+          console.log(`Failed to encounter the Pokemon :(`.toString().red);
+          return Promise.resolve();
+        }
 
         const {capture_probability} = encounterResponse;
         const probabilities = capture_probability.capture_probability;
