@@ -128,7 +128,6 @@ export default class PokemonCatchingWorker extends TickWorker {
             return sum;
           }, 0);
           console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
-
           return false;
         } else if (status === 2) {
           console.log(`Pokemon broke free! Trying again...`.toString().yellow);
@@ -142,7 +141,7 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   getCatchOptions() {
-    const spinModifier = 0.25 + Math.random() * 0.6;
+    const spinModifier = 0 + Math.random() * 0.85;
     const normalizedReticleSize = 1.1 + Math.random() * 0.85;
     const normalizedHitPosition = 1.0;
     const catchOptions = {
@@ -152,17 +151,14 @@ export default class PokemonCatchingWorker extends TickWorker {
       hitPokemon: true,
       pokeballItemID: this.getPokeballItemID(),
     };
-    // console.log(`Using catch options...`);
-    // console.log(JSON.stringify(catchOptions));
+     console.log(`Using catch options...`);
+     console.log(JSON.stringify(catchOptions));
     return catchOptions;
   }
 
   getPokeballItemID() {
     const {state} = this;
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
-    ballItems.forEach(ballItem => {
-      console.log(`Ball item ${ballItem.name}x${ballItem.count}`);
-    });
     for (let i = 0; i < ballItems.length; ++i) {
       return ballItems[0].id;
     }
