@@ -67,18 +67,17 @@ export default class InventoryWorker extends TickWorker {
     }
 
     const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
+    const activeLuckyEgg = this.hasActiveLuckyEgg();
     console.log(`Could evolve ${pokemonToEvolve.length} pokemon`.toString().yellow);
 
     let evolvePokemonPromise = Promise.resolve;
     if (pokemonToEvolve.length === 0) {
       console.log('No pokemon to evolve'.yellow);
-    } else if (pokemonToEvolve.length > startEvolvingWhenOverEvolvableCount) {
+    } else if (activeLuckyEgg || pokemonToEvolve.length > startEvolvingWhenOverEvolvableCount) {
       console.log('Queuing up pokemon evolving actions...'.yellow);
 
-      const activeLuckyEgg = this.hasActiveLuckyEgg();
-      const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
-
       // Use an egg if you have one before evolving!
+      const hasEgg = InventoryPruner.hasItem(luckyEggItemId, state.inventory);
       if (!activeLuckyEgg && hasEgg) {
         evolvePokemonPromise = () => new Promise(resolve => {
           return this.useLuckyEgg()
