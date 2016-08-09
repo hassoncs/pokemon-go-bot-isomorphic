@@ -1,11 +1,6 @@
 const pogobuf = require('pogobuf');
 const env = require('../../env');
 const colors = require('colors/safe');
-
-// const s2LatLng = new s2.S2LatLng(initialLatLng.lat, initialLatLng.lng); // Bottom of home curvy hill
-// const latLng = new s2.S2LatLng(37.808836, -122.410013); // Pier 39
-// const latLng = new s2.S2LatLng(37.758735, -122.403586); // Home
-
 import LoginWorker from './workers/LoginWorker';
 import StateSaveWorker from './workers/StateSaveWorker';
 import MapSummaryWorker from './workers/MapSummaryWorker';

@@ -1,4 +1,4 @@
-import pokemonList from '../data/pokemon';
+import pokemonList from '../bot/data/pokemon';
 import extend from 'lodash/extend';
 
 export default class Pokemon {

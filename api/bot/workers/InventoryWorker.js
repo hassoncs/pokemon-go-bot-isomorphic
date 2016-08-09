@@ -11,7 +11,7 @@ import async from 'async';
 import jsonfile from 'jsonfile';
 import Long from 'long';
 import Promise from 'bluebird';
-import levelXP from '../../data/levelXP';
+import levelXP from '../data/levelXP';
 const env = require('../../../env');
 
 const delayBetweenItems = 3000;
