@@ -30,7 +30,7 @@ export default class PokestopTargetingWorker extends TickWorker {
       fort.distanceToPlayer = distanceBetweenLatLngs(currentLatLng, fortLatLng);
     });
     forts.forEach((fort) => {
-      fort.score = -fort.distanceToPlayer;
+      fort.score = -fort.distanceToPlayer + 400; // 400 just to make it look nicer :P
 
       const fortHistory = fortsHistory[fort.id];
       if (fortHistory) {
