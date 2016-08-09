@@ -16,7 +16,7 @@ const TICK_INTERVAL = 1000;
 class Bot {
   constructor({state}) {
     this.state = state;
-    this.client = new PogoClient();
+    this.client = new PogoClient({state});
   }
 
   start() {
@@ -26,7 +26,7 @@ class Bot {
     const {client, state} = this;
     this.params = {client, state, bot: this};
     this._workers = [
-      new LoginWorker(this.params),
+      // new LoginWorker(this.params),
       new PlayerUpdateWorker(this.params),
       new PositionUpdateWorker(this.params),
       new MapSummaryWorker(this.params),

@@ -42,14 +42,4 @@ export default class LoginWorker extends TickWorker {
         });
     }));
   }
-
-  getLogin() {
-    if (env.loginProvider === 'google') {
-      return new pogobuf.GoogleLogin();
-    } else if (env.loginProvider === 'ptc') {
-      return new pogobuf.PTCLogin();
-    } else {
-      console.error(`Unknown loginProvider '${env.loginProvider}'`);
-    }
-  }
 }
