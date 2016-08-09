@@ -14,12 +14,12 @@ export default class PogoClient {
         .then((result) => {
           resolve(result);
           const areCallsWaiting = this.q.length() > 0;
-          if (areCallsWaiting) console.log(`PogoClient auto queuing calls! ${this.q.length()}`);
-          setTimeout(cb, areCallsWaiting ? 2500 : 0);
+          // if (areCallsWaiting) console.log(`PogoClient auto queuing calls! ${this.q.length()}`);
+          setTimeout(cb, areCallsWaiting ? 3500 : 0);
         })
         .catch((error) => {
           console.log(`PogoClientWrapper caught an error!`.toString().red);
-          console.error(error);
+          console.error(JSON.stringify(error));
           cb();
         });
     }, 1);
