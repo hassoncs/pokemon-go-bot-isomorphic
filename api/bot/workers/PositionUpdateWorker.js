@@ -68,31 +68,34 @@ export default class PositionUpdateWorker extends TickWorker {
     };
 
     console.log(`Spinning pokestop ${fort.details && fort.details.name}`);
-    client.fortSearch(fort.id, fort.latitude, fort.longitude)
-      .then((searchDetails) => {
-        state.target.targetFortId = null;
+    this.bot.pauseUntil(new Promise(resolve => {
+      client.fortSearch(fort.id, fort.latitude, fort.longitude)
+        .then((searchDetails) => {
+          state.target.targetFortId = null;
 
-        const xp = searchDetails.experience_awarded;
-        if (searchDetails.result === 0) return console.log(`Pokestop search failed, try again later :(`.toString().red);
-        if (searchDetails.result === 1) console.log(`Pokestop search successful`.toString().green);
-        if (searchDetails.result === 2) return console.log(`Pokestop out of range`.toString().red);
-        if (searchDetails.result === 3) return console.log(`Pokestop on cooldown`.toString().red);
-        if (searchDetails.result === 4) console.log(`Pokestop search successful, but inventory is full`.toString().green);
+          const xp = searchDetails.experience_awarded;
+          if (searchDetails.result === 0) return console.log(`Pokestop search failed, try again later :(`.toString().red);
+          if (searchDetails.result === 1) console.log(`Pokestop search successful`.toString().green);
+          if (searchDetails.result === 2) return console.log(`Pokestop out of range`.toString().red);
+          if (searchDetails.result === 3) return console.log(`Pokestop on cooldown`.toString().red);
+          if (searchDetails.result === 4) console.log(`Pokestop search successful, but inventory is full`.toString().green);
 
 
-        // console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
-        const localItems = utils.toLocalItems(searchDetails.items_awarded);
-        console.log(`  ${xp} xp`.toString().green);
-        logUtils.logItems(localItems, 'green');
+          // console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
+          const localItems = utils.toLocalItems(searchDetails.items_awarded);
+          console.log(`  ${xp} xp`.toString().green);
+          logUtils.logItems(localItems, 'green');
 
-        localItems.forEach(item => {
-          utils.deltaItem(item.id, item.count, state.inventory);
-        });
+          localItems.forEach(item => {
+            utils.deltaItem(item.id, item.count, state.inventory);
+          });
 
-        const last = {xp, items: localItems};
-        state.target.last = last;
-        // console.log(`Done Spinning fort ${fort.details.name}`, last);
-        state.target.targetFortId = null;
-      });
+          const last = {xp, items: localItems};
+          state.target.last = last;
+          // console.log(`Done Spinning fort ${fort.details.name}`, last);
+          state.target.targetFortId = null;
+          resolve();
+        }, resolve);
+    }));
   }
 }

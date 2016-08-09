@@ -1,21 +1,14 @@
-import pogobuf from 'pogobuf';
-import POGOProtos from 'node-pogo-protos';
 import pokemonList from '../data/pokemon';
-import groupBy from 'lodash/groupBy';
-import itemData from '../data/itemData';
 import Pokemon from '../../models/Pokemon';
-const itemDataByItemId = groupBy(itemData, 'id');
+import Item from '../../models/Item';
 
 export default {
   toLocalItems(remoteItems) {
     const items = remoteItems.map(item => {
-      const itemData = itemDataByItemId[item.item_id];
-      return {
+      return new Item({
         id: item.item_id,
-        type: itemData && itemData[0] && itemData[0].type || 'special',
         count: item.count || item.item_count || 0,
-        name: pogobuf.Utils.getEnumKeyByValue(POGOProtos.Inventory.Item.ItemId, item.item_id),
-      };
+      });
     });
     return items;
   },
@@ -58,7 +51,12 @@ export default {
 
   deltaItem(itemId, delta, inventory) {
     const item = inventory.itemsById[itemId];
-    if (!item) return console.warn(['No item with id', itemId]);
+    if (!item) {
+      inventory.itemsById[itemId] = new Item({
+        id: itemId,
+        count: delta,
+      });
+    }
     item.count = Math.max(0, item.count + delta);
     //return console.log(['New item count', item.name, item.count]);
   },

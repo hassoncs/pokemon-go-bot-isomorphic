@@ -126,7 +126,7 @@ export default class InventoryWorker extends TickWorker {
   processItems(inventory) {
     const {state} = this;
     const items = utils.toLocalItems(inventory.items);
-    // logUtils.logItems(items);
+    logUtils.logItems(items);
 
     const itemsById = {};
     items.map(item => itemsById[item.id] = item);

@@ -28,8 +28,8 @@ export default class PokemonCatchingWorker extends TickWorker {
     // console.log(`There are ${encounters.length} pokemon that I could catch`);
     if (encounters.length === 0) return;
 
-    const pokeballItemID = this.getPokeballItemID();
-    if (!pokeballItemID) return console.log('Out of pokeballs! Skipping catching.'.red);
+    const pokeballItem = this.getPokeballItem();
+    if (!pokeballItem) return console.log('Out of pokeballs! Skipping catching.'.red);
 
     this.bot.pauseUntil(new Promise(resolve => {
       async.eachSeries(encounters, (encounter, cb) => {
@@ -80,20 +80,20 @@ export default class PokemonCatchingWorker extends TickWorker {
         Promise.delay(pauseDurationBeforeCatching)
           .then(() => {
             const {
-              pokeballItemID,
+              pokeballItem,
               normalizedReticleSize,
               hitPokemon,
               spinModifier,
               normalizedHitPosition,
             } = this.getCatchOptions();
-            if (!pokeballItemID) {
+            if (!pokeballItem) {
               console.log('Out of pokeballs! Skipping catching.'.red);
               return Promise.resolve();
             }
-            utils.deltaItem(pokeballItemID, -1, state.inventory);
+            utils.deltaItem(pokeballItem.id, -1, state.inventory);
             return client.catchPokemon(
               encounterID,
-              pokeballItemID,
+              pokeballItem.id,
               normalizedReticleSize,
               spawnPointID,
               hitPokemon,
@@ -144,23 +144,26 @@ export default class PokemonCatchingWorker extends TickWorker {
     const spinModifier = 0 + Math.random() * 0.85;
     const normalizedReticleSize = 1.1 + Math.random() * 0.85;
     const normalizedHitPosition = 1.0;
+    const pokeballItem = this.getPokeballItem();
     const catchOptions = {
       spinModifier,
       normalizedReticleSize,
       normalizedHitPosition,
+      pokeballItem,
       hitPokemon: true,
-      pokeballItemID: this.getPokeballItemID(),
     };
-     console.log(`with spin ${catchOptions.spinModifier.toFixed(1)}, size: ${catchOptions.normalizedReticleSize.toFixed(2)}`);
+    console.log(`with spin ${catchOptions.spinModifier.toFixed(1)},\
+ size: ${catchOptions.normalizedReticleSize.toFixed(2)},\
+ with ${pokeballItem.name}`);
     return catchOptions;
   }
 
-  getPokeballItemID() {
+  getPokeballItem() {
     const {state} = this;
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
     for (let i = 0; i < ballItems.length; ++i) {
-      return ballItems[0].id;
+      return ballItems[0];
     }
-    return 0;
+    return null;
   }
 }
