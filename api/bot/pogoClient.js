@@ -24,6 +24,7 @@ export default class PogoClient {
 
             if (error.message === 'Status code 102 received from RPC') {
               this.login().then(runTask);
+              const areCallsWaiting = this.q.length() > 0;
               setTimeout(cb, areCallsWaiting ? 3500 : 0);
             } else {
               cb();
