@@ -5,7 +5,7 @@ const colors = require('colors/safe');
 import {
   distanceBetweenLatLngs,
   randomLatLng,
-} from '../geo';
+} from '../utils/geo';
 
 const POKESTOP_SPIN_WAIT = 5 * 60 * 1000; // 5 mins
 

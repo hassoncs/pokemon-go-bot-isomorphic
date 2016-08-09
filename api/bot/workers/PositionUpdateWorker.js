@@ -1,14 +1,14 @@
 import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
-import logUtils from '../logUtils';
-import utils from '../utils';
+import logUtils from '../utils/logUtils';
+import utils from '../utils/utils';
 
 import {
   distanceBetweenLatLngs,
   getLatLngAlong,
   randomLatLng,
-} from '../geo';
+} from '../utils/geo';
 
 const pokestopUsageRadius = 5;
 const waitBeforeSpinningPokestop = 3000;

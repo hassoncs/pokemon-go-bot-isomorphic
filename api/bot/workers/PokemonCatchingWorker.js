@@ -1,9 +1,9 @@
 import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
-import utils from '../utils';
-import logUtils from '../logUtils';
-import InventoryPruner from '../InventoryPruner';
+import utils from '../utils/utils';
+import logUtils from '../utils/logUtils';
+import InventoryPruner from '../utils/InventoryPruner';
 import async from 'async';
 import Promise from 'bluebird';
 

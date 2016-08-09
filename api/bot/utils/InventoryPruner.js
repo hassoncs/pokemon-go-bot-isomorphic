@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import itemData from '../data/itemData';
+import itemData from '../../data/itemData';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 

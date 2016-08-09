@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import InventoryPruner from '../utils/InventoryPruner';
+import InventoryPruner from '../bot/utils/InventoryPruner';
 
 describe('InventoryPruner', () => {
 

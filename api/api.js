@@ -89,3 +89,9 @@ if (config.apiPort) {
 } else {
   console.error('==>     ERROR: No PORT environment variable has been specified');
 }
+
+import Bot from 'bot/bot';
+import botState from 'bot/botState';
+
+const bot = new Bot({state: botState});
+bot.start();

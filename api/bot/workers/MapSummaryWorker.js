@@ -8,7 +8,7 @@ import {
   latLngsToFeatureLine,
   featureToLatLng,
   randomLatLng,
-} from '../geo';
+} from '../utils/geo';
 
 export default class MapSummaryWorker extends TickWorker {
   constructor({state, client, bot}) {

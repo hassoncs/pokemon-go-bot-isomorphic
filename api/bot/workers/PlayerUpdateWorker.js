@@ -2,7 +2,7 @@ import TickWorker from './TickWorker';
 import {
   distanceBetweenLatLngs,
   randomLatLng,
-} from '../geo';
+} from '../utils/geo';
 
 export default class PlayerUpdateWorker extends TickWorker {
   getConfig() {

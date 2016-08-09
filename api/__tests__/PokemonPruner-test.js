@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import Pokemon from '../models/Pokemon';
-import PokemonPruner from '../utils/PokemonPruner';
+import PokemonPruner from '../bot/utils/PokemonPruner';
 import inventoryData from './inventory-fixture';
 
 inventoryData.pokemons = inventoryData.pokemons.map(p => new Pokemon(p));
