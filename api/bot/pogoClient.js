@@ -19,16 +19,15 @@ export default class PogoClient {
             setTimeout(cb, areCallsWaiting ? 3500 : 0);
           })
           .catch((error) => {
-            console.log(`PogoClientWrapper caught an error!`.toString().red);
+            console.log(`PogoClientWrapper caught an error calling '${name}'!`.toString().red);
             console.error(JSON.stringify(error));
 
             if (error.message === 'Status code 102 received from RPC') {
               this.login().then(runTask);
               const areCallsWaiting = this.q.length() > 0;
-              setTimeout(cb, areCallsWaiting ? 3500 : 0);
-            } else {
-              cb();
+              return setTimeout(cb, areCallsWaiting ? 3500 : 0);
             }
+            cb();
           });
       };
       runTask();

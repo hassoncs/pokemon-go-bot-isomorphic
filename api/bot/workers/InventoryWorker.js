@@ -21,6 +21,7 @@ const delayBetweenTransfers = 3000;
 
 const luckyEggItemId = 301;
 const startEvolvingWhenOverEvolvableCount = 90;
+const maxPokemontCountBeforeTransfer = .75;
 
 export default class InventoryWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -92,7 +93,7 @@ export default class InventoryWorker extends TickWorker {
 
     let transferPokemonPromise = Promise.resolve;
     const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
-    const hasTooManyPokemon = true; //(pokemonFullnessPercent >= .95);
+    const hasTooManyPokemon = (pokemonFullnessPercent >= maxPokemontCountBeforeTransfer);
     if (hasTooManyPokemon && !activeLuckyEgg) {
       transferPokemonPromise = this.doPokemonTransferring.bind(this);
     }
