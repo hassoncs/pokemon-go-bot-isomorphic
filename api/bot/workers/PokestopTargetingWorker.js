@@ -65,7 +65,7 @@ export default class PokestopTargetingWorker extends TickWorker {
           ).then((details) => {
             fort.details = details;
             console.log(`Welcome to ${details.name}${details.description ? ', ' : ''}${details.description}`.toString().green);
-          }).then(cb);
+          }).then(cb, cb);
         },
         () => {
           if (!data.fort) return resolve();

@@ -95,7 +95,7 @@ export default class PositionUpdateWorker extends TickWorker {
           state.target.last = last;
           // console.log(`Done Spinning fort ${fort.details.name}`, last);
           state.target.targetFortId = null;
-        }, resolve);
+        }, resolve).catch(resolve);
     }));
   }
 }
