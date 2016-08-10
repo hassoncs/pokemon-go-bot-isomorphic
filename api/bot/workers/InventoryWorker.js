@@ -40,8 +40,7 @@ export default class InventoryWorker extends TickWorker {
       return client.getInventory(0)
         .bind(this)
         .then(rawInventory => {
-          console.log('Got rawInventory!');
-          if (!rawInventory.success) reject('success=false in inventory response');
+          if (!rawInventory.success) return reject('Failed to fetch inventory'.red);
           return this.processInventory(rawInventory);
         })
         .then(this.performInventoryActions)
@@ -50,7 +49,6 @@ export default class InventoryWorker extends TickWorker {
   }
 
   performInventoryActions() {
-    console.log('performInventoryActions!');
     const {state} = this;
 
     // const STATE_FILE_NAME = '/tmp/pogobot-inventory.json';
@@ -92,7 +90,7 @@ export default class InventoryWorker extends TickWorker {
     }
 
     let transferPokemonPromise = Promise.resolve;
-    const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.pokemonSummary.maxCount;
+    const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.maxPokemonCount;
     const hasTooManyPokemon = (pokemonFullnessPercent >= maxPokemontCountBeforeTransfer);
     if (hasTooManyPokemon && !activeLuckyEgg) {
       transferPokemonPromise = this.doPokemonTransferring.bind(this);
@@ -120,14 +118,12 @@ export default class InventoryWorker extends TickWorker {
     const inventory = pogobuf.Utils.splitInventory(rawInventory);
     state.inventory.rawInventory = inventory;
 
+    this.processUpgrades(inventory);
     this.processPlayer(inventory);
     this.processItems(inventory);
     this.processPokemon(inventory);
     this.processCandies(inventory);
     this.processAppliedItems(inventory);
-    this.processUpgrades(inventory);
-
-    console.log('processInventory DONE!!');
 
     return Promise.resolve();
   }
@@ -164,20 +160,25 @@ export default class InventoryWorker extends TickWorker {
     let itemCount = 0;
     items.forEach(item => itemCount += item.count);
     state.inventory.itemCount = itemCount;
-    state.inventory.maxItemCount = 350; // TODO: Don't hardcode this :)
 
-    console.log(`Player has ${itemCount} items`.toString().green);
+    console.log(`Player has ${itemCount}/${state.inventory.maxItemCount} items`.toString().green);
   }
 
   processUpgrades(inventory) {
     const {state} = this;
 
-    inventory.inventory_upgrades.forEach((upgrade) => {
-      if (upgrade.upgrade_type === 1) {
-        state.inventory.maxItemCount += 50;
-      } else if (upgrade.upgrade_type === 2) {
-        state.inventory.pokemonSummary.maxCount += 50;
-      }
+    state.inventory.maxItemCount = 350;
+    state.inventory.maxPokemonCount = 250;
+
+    const inventoryUpgrades = inventory.inventory_upgrades;
+    inventoryUpgrades.forEach(({inventory_upgrades}) => {
+      inventory_upgrades.forEach(({upgrade_type, additional_storage}) => {
+        if (upgrade_type === 1) {
+          state.inventory.maxItemCount += additional_storage;
+        } else if (upgrade_type === 2) {
+          state.inventory.maxPokemonCount += additional_storage;
+        }
+      });
     });
   }
 
@@ -200,10 +201,9 @@ export default class InventoryWorker extends TickWorker {
     // Pokemon processing
     state.inventory.pokemonSummary = {
       count: localPokemons.length,
-      maxCount: 250, // TODO: Don't hardcode this :)
     };
 
-    console.log(`Player has ${localPokemons.length} Pokemon`.toString().green);
+    console.log(`Player has ${localPokemons.length}/${state.inventory.maxPokemonCount} Pokemon`.toString().green);
   }
 
   processCandies(inventory) {
