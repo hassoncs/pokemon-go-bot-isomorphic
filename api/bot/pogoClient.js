@@ -1,5 +1,6 @@
 import pogobuf from 'pogobuf';
 import async from 'async';
+import once from 'lodash/once';
 import Promise from 'bluebird';
 const env = require('../../env');
 
@@ -8,6 +9,7 @@ export default class PogoClient {
     this.state = state;
 
     this.q = async.queue((task, cb) => {
+      const onceCB = once(cb);
       const {name, args, resolve} = task;
 
       const runTask = () => {
@@ -16,7 +18,7 @@ export default class PogoClient {
             resolve(result);
             const areCallsWaiting = this.q.length() > 0;
             // if (areCallsWaiting) console.log(`PogoClient auto queuing calls! ${this.q.length()}`);
-            setTimeout(cb, areCallsWaiting ? 3500 : 0);
+            setTimeout(onceCB, areCallsWaiting ? 3500 : 0);
           })
           .catch((error) => {
             console.log(`PogoClientWrapper caught an error calling '${name}'!`.toString().red);
@@ -25,9 +27,9 @@ export default class PogoClient {
             if (error.message === 'Status code 102 received from RPC') {
               this.login().then(runTask);
               const areCallsWaiting = this.q.length() > 0;
-              return setTimeout(cb, areCallsWaiting ? 3500 : 0);
+              return setTimeout(onceCB, areCallsWaiting ? 3500 : 0);
             }
-            cb();
+            onceCB();
           });
       };
       runTask();
