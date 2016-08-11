@@ -39,10 +39,7 @@ export default class InventoryWorker extends TickWorker {
     this.bot.pauseUntil(new Promise(resolve => {
       return client.getInventory(0)
         .bind(this)
-        .then(rawInventory => {
-          if (!rawInventory.success) return reject('Failed to fetch inventory'.red);
-          return this.processInventory(rawInventory);
-        })
+        .then(this.processInventory)
         .then(this.performInventoryActions)
         .then(resolve, resolve);
     }));
@@ -124,6 +121,7 @@ export default class InventoryWorker extends TickWorker {
     this.processPokemon(inventory);
     this.processCandies(inventory);
     this.processAppliedItems(inventory);
+    this.processEggIncubators(inventory);
 
     return Promise.resolve();
   }
@@ -188,7 +186,11 @@ export default class InventoryWorker extends TickWorker {
     const localPokemons = pokemons.map((remotePokemon) => {
       return utils.toLocalPokemon(remotePokemon);
     });
-    state.inventory.pokemons = localPokemons;
+    const localPokemonNoEggs = localPokemons.filter(p => !p.isEgg);
+    const localPokemonEggs = localPokemons.filter(p => p.isEgg);
+
+    state.inventory.pokemons = localPokemonNoEggs;
+    state.inventory.eggs = localPokemonEggs;
 
     //const pokemonsByIndex = groupBy(localPokemons, 'pokemonIndex');
     // Object.keys(pokemonsByIndex).forEach(pokemonIndex => {
@@ -204,6 +206,7 @@ export default class InventoryWorker extends TickWorker {
     };
 
     console.log(`Player has ${localPokemons.length}/${state.inventory.maxPokemonCount} Pokemon`.toString().green);
+    console.log(`Player has ${localPokemonEggs.length}/9 Eggs`.toString().green);
   }
 
   processCandies(inventory) {
@@ -244,6 +247,38 @@ export default class InventoryWorker extends TickWorker {
       console.log(`Lucky egg is ${active ? activeStr : 'expired'}`);
     });
     state.inventory.appliedItems = appliedItems;
+  }
+
+  processEggIncubators(inventory) {
+    const {state} = this;
+    state.inventory.eggIncubators = [];
+    inventory.egg_incubators.forEach((incubatorStore) => {
+      if (!incubatorStore) return;
+      incubatorStore.egg_incubator.forEach((incubator) => {
+        const {
+          id,
+          incubator_type,
+          item_id,
+          pokemon_id,
+          start_km_walked,
+          target_km_walked,
+          uses_remaining
+        } = incubator;
+        state.inventory.eggIncubators.push({
+          id,
+          incubatorType: incubator_type,
+          itemID: item_id,
+          pokemonID: pokemon_id,
+          startKmWalked: start_km_walked,
+          targetKmWalked: target_km_walked,
+          usesRemaining: uses_remaining,
+        });
+      });
+    });
+
+    const incubators = state.inventory.eggIncubators;
+    const usedIncubators = incubators.filter(incubator => incubator.pokemonID.toNumber() !== 0);
+    console.log(`${incubators.length} egg incubators, ${usedIncubators.length} are in use.`);
   }
 
   hasActiveLuckyEgg() {
