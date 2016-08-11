@@ -58,7 +58,7 @@ export default class PokestopTargetingWorker extends TickWorker {
         (() => forts.length > 0 && (!data.fort || data.fort.details.fortType === 'Gym')),
         (cb) => {
           const fort = data.fort = forts.shift();
-          if (!fort) return;
+          if (!fort) return cb();
 
           (fort.details ?
               Promise.resolve(fort.details) : this.getFortDetails(fort)
