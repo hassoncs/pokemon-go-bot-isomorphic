@@ -275,7 +275,7 @@ export default class InventoryWorker extends TickWorker {
     const currentLevelXP = experience - totalXPForCurrentLevel;
     const xpNeededForNextLevel = nextLevelXP - totalXPForCurrentLevel;
 
-    console.log(`Level ${playerData.level.yellow}, (${currentLevelXP}/${xpNeededForNextLevel}) ${(currentLevelXP / xpNeededForNextLevel * 100).toFixed(1).green}% to next level! `);
+    console.log(`${('Level ' + playerData.level.toFixed(0)).yellow}, ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to next level! (${currentLevelXP}/${xpNeededForNextLevel})`);
     //const xpNeededForMaxLevel = levelXP[levelXP.length - 1].xpTotal;
     //console.log(`${(experience / xpNeededForMaxLevel * 100).toFixed(1)}% to MAX level!`);
   }
