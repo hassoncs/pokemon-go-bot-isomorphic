@@ -138,4 +138,12 @@ export default class PogoClient {
   fortSearch() {
     return this.delegate('fortSearch', arguments);
   }
+
+  getHatchedEggs() {
+    return this.delegate('getHatchedEggs', arguments);
+  }
+
+  useItemEggIncubator() {
+    return this.delegate('useItemEggIncubator', arguments);
+  }
 }
