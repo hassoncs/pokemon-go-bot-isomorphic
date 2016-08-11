@@ -275,15 +275,15 @@ export default class InventoryWorker extends TickWorker {
     const currentLevelXP = experience - totalXPForCurrentLevel;
     const xpNeededForNextLevel = nextLevelXP - totalXPForCurrentLevel;
 
-    console.log('Player Status');
-    console.log(`Level ${playerData.level}, (${currentLevelXP}/${xpNeededForNextLevel})`);
-    console.log(`${(currentLevelXP / xpNeededForNextLevel * 100).toFixed(1)}% to next level!`);
+    console.log(`Level ${playerData.level.yellow}, (${currentLevelXP}/${xpNeededForNextLevel}) ${(currentLevelXP / xpNeededForNextLevel * 100).toFixed(1).green}% to next level! `);
+    //const xpNeededForMaxLevel = levelXP[levelXP.length - 1].xpTotal;
+    //console.log(`${(experience / xpNeededForMaxLevel * 100).toFixed(1)}% to MAX level!`);
   }
 
   doRecycleItems() {
     const {client, state} = this;
-    const {items} = state.inventory;
-    const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items);
+    const {items, maxItemCount} = state.inventory;
+    const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items, maxItemCount);
     const throwAwayItems = InventoryPruner.getThrowAwayItemsSubset(items, throwAwayCountByType);
 
     if (throwAwayItems.length === 0) {
