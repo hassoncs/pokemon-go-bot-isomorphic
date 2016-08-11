@@ -36,7 +36,7 @@ class InventoryPruner {
 
     const throwAwayCountByType = types.reduce((throwAwayCountByType, type) => {
       const desiredPercent = percentByType[type];
-      const desiredCount = maxInventorySize * desiredPercent;
+      const desiredCount = Math.floor(maxItemCount * desiredPercent);
       const throwAwayCount = itemCountByType[type] - desiredCount;
       if (throwAwayCount > 0) {
         throwAwayCountByType[type] = throwAwayCount;
