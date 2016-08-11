@@ -22,7 +22,7 @@ export default class PlayerUpdateWorker extends TickWorker {
     client.setPosition(randomizedLatLng.lat, randomizedLatLng.lng);
     client.playerUpdate(randomizedLatLng.lat, randomizedLatLng.lng)
       .then(() => {
-        console.log(`Setting player position: (${randomizedLatLng.lat.toFixed(3)},${randomizedLatLng.lng.toFixed(3)})`.toString().blue);
+        console.log(`Set player position: (${randomizedLatLng.lat.toFixed(3)},${randomizedLatLng.lng.toFixed(3)})`.toString().blue);
       });
   }
 }
