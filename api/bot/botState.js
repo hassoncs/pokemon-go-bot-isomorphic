@@ -20,10 +20,15 @@ const movement = extend({
   //  lat: 34.049202,
   //  lng: -118.245741
   //},
+  // Santa Monica:
   currentLatLng: {
-    lat: 37.808836,
-    lng: -122.410013
+    lat: 34.016567,
+    lng: -118.488766
   },
+  //currentLatLng: {
+  //  lat: 37.808836,
+  //  lng: -122.410013
+  //},
   targetLatLng: null,
 }, prevState && prevState.movement, {
   // must be < 20kmph to hatch eggs?
