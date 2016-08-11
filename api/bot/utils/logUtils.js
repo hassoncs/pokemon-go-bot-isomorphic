@@ -8,8 +8,10 @@ module.exports = {
     });
   },
 
-  getPokemonNameString({pokedex, cp}) {
-    return `${pokedex.Name.magenta}(${cp.toString().gray})`;
+  getPokemonNameString(pokemon) {
+    const {pokedex, cp} = pokemon;
+    const ivString = pokemon.getIV ? `[${('IV' + pokemon.getIV().toString()).gray}]` : '';
+    return `${pokedex.Name.magenta}(${cp.toString().gray})${ivString}`;
   },
 
   getItemNameString(name) {
