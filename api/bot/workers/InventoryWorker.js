@@ -117,13 +117,18 @@ export default class InventoryWorker extends TickWorker {
     const inventory = pogobuf.Utils.splitInventory(rawInventory);
     state.inventory.rawInventory = inventory;
 
-    this.processUpgrades(inventory);
-    this.processPlayer(inventory);
-    this.processItems(inventory);
-    this.processPokemon(inventory);
-    this.processCandies(inventory);
-    this.processAppliedItems(inventory);
-    this.processEggIncubators(inventory);
+    try {
+      this.processUpgrades(inventory);
+      this.processPlayer(inventory);
+      this.processItems(inventory);
+      this.processPokemon(inventory);
+      this.processCandies(inventory);
+      this.processAppliedItems(inventory);
+      this.processEggIncubators(inventory);
+    } catch (e) {
+      console.log('Failed to process inventory!');
+      console.error(e);
+    }
 
     return Promise.resolve();
   }
@@ -280,7 +285,9 @@ export default class InventoryWorker extends TickWorker {
       });
     });
 
+    const {kmWalked} = state.inventory.player;
     const incubators = state.inventory.eggIncubators;
+
     const usedIncubators = incubators.filter(incubator => incubator.pokemonID.toNumber() !== 0);
     console.log(`${incubators.length} egg incubators, ${usedIncubators.length} are in use.`);
     incubators.forEach((incubator, i) => {
@@ -288,10 +295,12 @@ export default class InventoryWorker extends TickWorker {
       const beingUsed = (pokemonID.toNumber() !== 0);
       let useString = `Unused.`;
       if (beingUsed) {
-        const percentDone = (startKmWalked / targetKmWalked * 100).toFixed(1) + '%';
+        const distanceFromStartKm = kmWalked - startKmWalked;
+        const distanceFromTargetKm = targetKmWalked - startKmWalked;
+        const percentDone = (distanceFromStartKm / distanceFromTargetKm * 100).toFixed(1) + '%';
         useString = `Incubating ${pokemonID}, ${percentDone} hatched`;
       }
-      console.log(`${i}) ${id}, type '${itemID}' – ${usesRemaining} uses left. ${useString}`);
+      console.log(`${i}) ${usesRemaining} uses left. ${useString}`);
     });
   }
 
@@ -312,9 +321,10 @@ export default class InventoryWorker extends TickWorker {
     const nextLevelXP = toNumber(playerData.next_level_xp);
     const experience = toNumber(playerData.experience);
     const player = {
-      level: playerData.level,
-      nextLevelXP,
       experience,
+      nextLevelXP,
+      level: playerData.level,
+      kmWalked: playerData.km_walked,
     };
     state.inventory.player = player;
 
@@ -324,7 +334,8 @@ export default class InventoryWorker extends TickWorker {
     const currentLevelXP = experience - totalXPForCurrentLevel;
     const xpNeededForNextLevel = nextLevelXP - totalXPForCurrentLevel;
 
-    console.log(`${('Level ' + playerData.level.toFixed(0)).yellow}, ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to next level! (${currentLevelXP}/${xpNeededForNextLevel})`);
+    console.log(`${('Level ' + playerData.level.toFixed(0)).yellow}, \
+${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to next level! (${currentLevelXP}/${xpNeededForNextLevel})`);
     //const xpNeededForMaxLevel = levelXP[levelXP.length - 1].xpTotal;
     //console.log(`${(experience / xpNeededForMaxLevel * 100).toFixed(1)}% to MAX level!`);
   }
@@ -386,7 +397,6 @@ export default class InventoryWorker extends TickWorker {
   doPokemonTransferring() {
     const {client, state} = this;
     return new Promise(resolve => {
-      ;
       const pokemons = PokemonPruner.getPokemonToTransfer(state.inventory, env.maxTransferCP);
       if (pokemons.length === 0) {
         console.log('No pokemon to transfer'.yellow);
@@ -449,36 +459,33 @@ export default class InventoryWorker extends TickWorker {
 
       console.log('Incubating Eggs...');
       console.log(`${allEggIDs.length}/${state.inventory.eggs.length} are available to incubate`);
+      if (allEggIDs.length === 0) return resolve();
 
       async.eachSeries(eggIncubators, (incubator, cb) => {
         const {id, itemID} = incubator;
 
         if (incubator.beingUsed) {
-          console.log(`Skipping incubator ${id}, it's being used already.`);
+          //console.log(`Skipping incubator ${id}, it's being used already.`);
           return cb();
         }
 
-        const pokemonID = null;
-        console.log(`Using incubator ${id}, itemID: ${itemID}`);
-        return cb();
+        const pokemonID = allEggIDs.shift();
+        incubator.beingUsed = true;
+        incubator.pokemonID = pokemonID;
+        console.log(`Using incubator ${id}, itemID: ${itemID}, pokemonID: ${pokemonID.toNumber()}`);
 
-        client.useItemEggIncubator(itemID, pokemonID)
+        client.useItemEggIncubator(incubator.id, pokemonID)
           .then(response => {
-            console.log('Hatched Eggs Response:');
+            console.log('useItemEggIncubator Response:');
             console.log(response);
+            return cb();
 
-            if (response.success) {
-              console.log(`Successfully checked for hatched eggs`.toString().green);
-              const pokemonIDs = response.pokemon_id;
-              const candyAwarded = response.candy_awarded;
-              const experienceAwarded = response.experience_awarded;
-              const stardustAwarded = response.stardust_awarded;
-              console.log(`${pokemonIDs.length.toString().green} hatched.`);
+            if (response.result === 1) {
+              console.log(`Successfully incubating egg!`.toString().green);
             } else {
-              console.log(`Failed to check for hatched eggs`.toString().red);
+              console.log(`Failed to incubate egg`.toString().red);
             }
-
-            return resolve();
+            return cb();
           });
       }, resolve);
     });
