@@ -30,6 +30,7 @@ export default class PokemonCatchingWorker extends TickWorker {
 
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
     if (!Object.keys(ballItems).length) return console.log('Out of pokeballs! Skipping catching.'.red);
+    if (state.softBanned) return console.log('Skipping catching, you are soft-banned :('.red);
 
     this.bot.pauseUntil(new Promise(resolve => {
       async.eachSeries(encounters, (encounter, cb) => {
