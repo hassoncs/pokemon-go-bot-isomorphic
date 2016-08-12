@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {connect} from 'react-redux';
 import {Link} from 'react-router';
 import { asyncConnect } from 'redux-async-connect';
+const styles = require('./PokemonIcon.scss');
 
 function pad(n, width, z) {
   z = z || '0';
@@ -11,16 +12,16 @@ function pad(n, width, z) {
 
 export default class PokemonIcon extends Component {
   static propTypes = {
-    pokemonId: PropTypes.string,
+    pokemonIndex: PropTypes.number,
   };
 
   render() {
-    const styles = require('./PokemonIcon.scss');
+    const pokemonId = `${this.props.pokemonIndex + 1}`;
     return (
-      <div>
+      <div className={styles.root}>
         <img
           className={styles.pokemonIcon}
-          src={require(`../../components/PokemonIcon/images/${pad(this.props.pokemonId, 3)}.png`)}
+          src={require(`../../components/PokemonIcon/images/${pad(pokemonId, 3)}.png`)}
         />
       </div>
     );
