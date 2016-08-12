@@ -29,6 +29,8 @@ export default class InventoryPanel extends Component {
   render() {
     const {activeTab} = this.state;
     const {inventory} = this.props;
+    if (!inventory || !inventory.pokemons) return null;
+
     const pokemons = inventory.pokemons.map(p => new Pokemon(p));
     const sortedPokemons = sortBy(pokemons, 'pokemonIndex');
     return (
