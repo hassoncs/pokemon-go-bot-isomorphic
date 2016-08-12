@@ -10,7 +10,7 @@ export default class PogoClient {
 
     this.q = async.queue((task, cb) => {
       const onceCB = once(cb);
-      const {name, args, resolve} = task;
+      const {name, args, resolve, reject} = task;
 
       const runTask = () => {
         this.client[name].apply(this.client, Array.from(args))
@@ -28,8 +28,10 @@ export default class PogoClient {
               this.login().then(runTask);
               const areCallsWaiting = this.q.length() > 0;
               return setTimeout(onceCB, areCallsWaiting ? 3500 : 0);
+            } else {
+              onceCB();
+              reject();
             }
-            onceCB();
           });
       };
       runTask();
@@ -90,8 +92,8 @@ export default class PogoClient {
   }
 
   delegate(name, args) {
-    return new Promise(resolve => {
-      this.q.push({name, args, resolve});
+    return new Promise((resolve, reject) => {
+      this.q.push({name, args, resolve, reject});
     });
   }
 
