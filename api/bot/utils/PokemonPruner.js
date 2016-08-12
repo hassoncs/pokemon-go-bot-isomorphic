@@ -23,7 +23,7 @@ class PokemonPruner {
     const pokemonToEvolve = [];
 
     // Reverse the list so we evolve pokemon to the highest evolutions first
-    const reversedPokemonsByIndex = Object.keys(pokemonsByIndex).reverse();
+    const reversedPokemonsByIndex = sortBy(Object.keys(pokemonsByIndex), (indexStr) => +indexStr).reverse();
 
     reversedPokemonsByIndex.forEach(pokemonIndex => {
       const pokemons = pokemonsByIndex[pokemonIndex];
@@ -33,33 +33,42 @@ class PokemonPruner {
       const pokedex = representativePokemon.pokedex;
       if (!pokedex) return;
 
-      //const name = pokedex.Name;
-      //console.log(`${count}x ${name}`);
+      // const name = pokedex.Name;
+      // console.log(`${count}x ${name}`);
 
       const nextEvoReqs = pokedex['Next Evolution Requirements'];
       const nextEvos = pokedex['Next evolution(s)'] || [];
+      const prevEvo = pokedex['Previous evolution(s)'] || [];
       const requiredCandyCount = nextEvoReqs && nextEvoReqs.Amount || 0;
       const candy = candiesByIndex[+pokemonIndex + 1];
       const candyCount = candy && candy.count || 0;
       const pokemonIsCapableOfEvolving = (requiredCandyCount > 0);
       const canEvolve = (pokemonIsCapableOfEvolving && candyCount >= requiredCandyCount);
+      const isBasePokemon = (prevEvo.length === 0);
 
-      let hasAllInEvoChain = true;
+      let maxEvoCount = count;
+      let shouldEvolve = isBasePokemon;
       const lastEvo = last(nextEvos);
       if (lastEvo) {
-        // Do we have a last evo?
         //console.log(['Checking if we have a ', lastEvo.Name]);
         const allLastEvoPokemons = pokemonsByIndex[+lastEvo.Number - 1] || [];
-        hasAllInEvoChain = allLastEvoPokemons.length > 0;
-        //console.log(['have last evo? ', hasAllInEvoChain]);
+        const hasAllInEvoChain = allLastEvoPokemons.length > 0;
+        // console.log(['have last evo? ', hasAllInEvoChain]);
+
+        if (!hasAllInEvoChain) {
+          maxEvoCount = 1;
+          shouldEvolve = true;
+        }
       }
 
-      if (!canEvolve || !hasAllInEvoChain) return; // console.log(`${name} needs ${requiredCandyCount}, but player only has ${candyCount}`);
+      // console.log(['shouldEvolve? ', shouldEvolve]);
+      if (!canEvolve || !shouldEvolve) return; // console.log(`${name} needs ${requiredCandyCount}, but player only has ${candyCount}`);
       const evolvableCount = Math.min(
-        count,
+        maxEvoCount,
         Math.floor(candyCount / requiredCandyCount)
       );
 
+      candiesByIndex[+pokemonIndex + 1] -= evolvableCount * requiredCandyCount;
       pokemonToEvolve.push.apply(pokemonToEvolve, cpSortedPokemons.slice(0, evolvableCount));
 
       // console.log(`${count}x ${name} #${pokemonIndex}`);

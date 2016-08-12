@@ -10,7 +10,7 @@ describe('PokemonPruner', () => {
 
   it('.getPokemonToEvolve', () => {
     const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(inventoryData);
-    expect(pokemonToEvolve.length).to.deep.equal(22);
+    expect(pokemonToEvolve.length).to.deep.equal(28);
   });
 
   it('.getPokemonToTransfer', () => {
