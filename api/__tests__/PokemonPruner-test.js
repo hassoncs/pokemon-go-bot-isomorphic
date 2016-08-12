@@ -10,11 +10,15 @@ describe('PokemonPruner', () => {
 
   it('.getPokemonToEvolve', () => {
     const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(inventoryData);
-    expect(pokemonToEvolve.length).to.deep.equal(49);
+    expect(pokemonToEvolve.length).to.deep.equal(22);
   });
 
   it('.getPokemonToTransfer', () => {
-    const pokemons = PokemonPruner.getPokemonToTransfer(inventoryData);
-    expect(pokemons.length).to.deep.equal(164);
+    expect(
+      PokemonPruner.getPokemonToTransfer(inventoryData, 100).length
+    ).to.deep.equal(77);
+    expect(
+      PokemonPruner.getPokemonToTransfer(inventoryData, Infinity).length
+    ).to.deep.equal(150);
   });
 });

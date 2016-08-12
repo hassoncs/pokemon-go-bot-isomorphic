@@ -19,12 +19,13 @@ describe('InventoryPruner', () => {
     {id: 501, count: 3, name: 'Item Troy Disk'}];
 
   it('.getThrowAwayCountByType', () => {
-    const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items, 300);
+    const throwAwayCountByType = InventoryPruner.getThrowAwayCountByType(items, 250);
 
     expect(throwAwayCountByType).to.deep.equal({
-      potion: 35,
-      revive: 39,
-      berry: 22,
+      potion: 43,
+      revive: 42,
+      berry: 30,
+      ball: 1,
     });
   });
 

@@ -3,7 +3,7 @@ import itemData from '../data/itemData';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 
-const percentByType = {
+const defaultPercentByType = {
   ball: .55,
   potion: .15,
   revive: .05,
@@ -19,9 +19,8 @@ class InventoryPruner {
       .value() || [];
   }
 
-  getThrowAwayCountByType(items, maxItemCount) {
+  getThrowAwayCountByType(items, maxItemCount, percentByType = defaultPercentByType) {
     // Figure out how many of each type we have
-
     //const totalItemCount = items.reduce((sum, item) => sum += item.count, 0);
     //console.log(['totalItemCount',totalItemCount]);
 
