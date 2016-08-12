@@ -30,7 +30,7 @@ export default class PogoClient {
               return setTimeout(onceCB, areCallsWaiting ? 3500 : 0);
             } else {
               onceCB();
-              reject();
+              reject(new Error('RPC Call Failure'));
             }
           });
       };
