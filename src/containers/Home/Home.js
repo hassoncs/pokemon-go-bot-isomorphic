@@ -10,6 +10,8 @@ import {isLoaded, load as loadWidgets} from 'redux/modules/widgets';
 import InventoryPanel from 'components/InventoryPanel/InventoryPanel';
 import PokemonIcon from 'components/PokemonIcon/PokemonIcon';
 
+const styles = require('./Home.scss');
+
 @asyncConnect([{
   deferred: true,
   promise: ({store: {dispatch, getState}}) => {
@@ -46,7 +48,6 @@ export default class Home extends Component {
   render() {
     const L = require('leaflet');
     const {Map, Marker, Popup, TileLayer, Polyline} = require('react-leaflet');
-    const styles = require('./Home.scss');
     const {widgets, load} = this.props;
     const state = widgets;
 
