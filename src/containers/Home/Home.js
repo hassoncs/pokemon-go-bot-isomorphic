@@ -72,7 +72,7 @@ export default class Home extends Component {
             ref={(el) => this._map = el}
           >
             <TileLayer
-              url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
+              url="http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg"
             />
             {widgets && widgets.mapSummary.encounters.map((pokemon) => (
               <Marker
