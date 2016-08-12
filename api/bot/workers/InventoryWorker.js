@@ -89,7 +89,8 @@ export default class InventoryWorker extends TickWorker {
     let transferPokemonPromise = Promise.resolve;
     const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.maxPokemonCount;
     const hasTooManyPokemon = (pokemonFullnessPercent >= maxPokemontCountBeforeTransfer);
-    if (hasTooManyPokemon && !activeLuckyEgg) {
+    const totallyFullOfPokemon = pokemonFullnessPercent >= 1;
+    if (totallyFullOfPokemon || hasTooManyPokemon && !activeLuckyEgg) {
       transferPokemonPromise = this.doPokemonTransferring.bind(this);
     }
 
@@ -485,18 +486,14 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
         const pokemonID = allEggIDs.shift();
         incubator.beingUsed = true;
         incubator.pokemonID = pokemonID;
-        console.log(`Using incubator ${id}, itemID: ${itemID}, pokemonID: ${pokemonID.toNumber()}`);
+        console.log(`Putting egg ${pokemonID.toNumber()} in incubator ${incubator.id}`);
 
         client.useItemEggIncubator(incubator.id, pokemonID)
           .then(response => {
-            console.log('useItemEggIncubator Response:');
-            console.log(response);
-            return cb();
-
             if (response.result === 1) {
-              console.log(`Successfully incubating egg!`.toString().green);
+              console.log(`Put egg ${pokemonID.toNumber()} in incubator ${incubator.id}`.toString().green);
             } else {
-              console.log(`Failed to incubate egg`.toString().red);
+              console.log(`Failed to put egg ${pokemonID.toNumber()} in incubator ${incubator.id}`.toString().red);
             }
             return cb();
           });
