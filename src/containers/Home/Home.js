@@ -7,6 +7,7 @@ import Helmet from 'react-helmet';
 import * as widgetActions from 'redux/modules/widgets';
 import { asyncConnect } from 'redux-async-connect';
 import {isLoaded, load as loadWidgets} from 'redux/modules/widgets';
+import InventoryPanel from 'components/InventoryPanel/InventoryPanel';
 import PokemonIcon from 'components/PokemonIcon/PokemonIcon';
 
 @asyncConnect([{
@@ -54,7 +55,7 @@ export default class Home extends Component {
     const playerLatLng = state.movement.currentLatLng;
     const playerRandomizedLatLng = state.movement.randomizedLatLng;
 
-    console.log(widgets);
+    window.state = state;
     return (
       <div className={styles.home}>
         <Helmet title="Home"/>
@@ -138,6 +139,7 @@ export default class Home extends Component {
             />
           </Map>
         </div>
+        <InventoryPanel inventory={state.inventory} />
       </div>
     );
   }
