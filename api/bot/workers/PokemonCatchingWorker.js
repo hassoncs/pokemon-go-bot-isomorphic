@@ -8,7 +8,7 @@ import async from 'async';
 import Promise from 'bluebird';
 
 // Wait time after encountering the pokemon before you can catch them
-const pauseDurationBeforeCatching = 6000;
+const pauseDurationBeforeCatching = 7000;
 
 export default class PokemonCatchingWorker extends TickWorker {
   constructor({state, client, bot}) {
@@ -72,7 +72,8 @@ export default class PokemonCatchingWorker extends TickWorker {
         // console.log(['probabilities',probabilities]);
 
         return this.catchPokemon(encounter, data.encounterResponse, pokemon);
-      });
+      })
+      .then(Promise.delay.bind(this, 1500));
   }
 
   catchPokemon(encounter, encounterResponse, pokemon) {
