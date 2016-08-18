@@ -29,8 +29,11 @@ export default class PokemonCatchingWorker extends TickWorker {
     if (encounters.length === 0) return;
 
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
-    if (!Object.keys(ballItems).length) return console.log('Out of pokeballs! Skipping catching.'.red);
+    if (!Object.keys(ballItems).length) return console.log('Out of pokeballs! Skipping catching.'.yellow);
     if (state.softBanned) return console.log('Skipping catching, you are soft-banned :('.red);
+
+    const pokemonPackFull = state.inventory.pokemonSummary.count >= state.inventory.maxPokemonCount;
+    if (pokemonPackFull) return console.log('Skipping catching, you have no room for new pokemon!'.yellow);
 
     this.bot.pauseUntil(new Promise(resolve => {
       async.eachSeries(encounters, (encounter, cb) => {
