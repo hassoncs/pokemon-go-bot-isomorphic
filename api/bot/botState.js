@@ -40,7 +40,7 @@ const movement = extend({
   targetLatLng: null,
 }, prevState && prevState.movement, {
   // must be < 20kmph to hatch eggs?
-  speedMps: 2.45, // human speed is 1.4 - 2.5?
+  speedMps: 3.75, // human speed is 1.4 - 2.5?
 });
 
 const target = extend({
@@ -58,13 +58,22 @@ const mapSummary = extend({
   decimated_spawn_points: [],
 });
 
+const inventory = extend({
+  items: [],
+  itemsById: {},
+  player: extend({
+    experience: 0,
+    nextLevelXP: 0,
+    leveledUp: false,
+    level: 1,
+    kmWalked: 0,
+  }, prevState && prevState.inventory && prevState.inventory.player),
+}, prevState && prevState.inventory);
+
 const state = extend({
   target,
   movement,
-  inventory: {
-    items: [],
-    itemsById: {},
-  },
+  inventory,
   mapSummary,
   loggedIn: false,
 });
