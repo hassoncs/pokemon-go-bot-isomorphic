@@ -328,12 +328,10 @@ export default class InventoryWorker extends TickWorker {
   }
 
   processPlayer(inventory) {
-    const toNumber = (long) => new Long(long.low, long.high, long.unsigned).toNumber();
-
     const {state} = this;
     const playerData = inventory.player;
-    const nextLevelXP = toNumber(playerData.next_level_xp);
-    const experience = toNumber(playerData.experience);
+    const nextLevelXP = playerData.next_level_xp;
+    const experience = playerData.experience;
     const player = {
       experience,
       nextLevelXP,
