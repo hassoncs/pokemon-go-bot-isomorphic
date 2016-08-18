@@ -45,14 +45,13 @@ export default class MapSummaryWorker extends TickWorker {
           });
         });
 
-        mapSummary.encounters = mapSummary.catchable_pokemons.map(pokemon => {
-          const toLong = (({low, high, unsigned}) => new Long(low, high, unsigned));
+        mapSummary.encounters = mapSummary.catchable_pokemons.map(encounter => {
           return {
-            encounterID: toLong(pokemon.encounter_id),
-            pokemonID: pokemon.pokemon_id,
-            spawnPointID: pokemon.spawn_point_id,
-            expirationTimestampMs: toLong(pokemon.expiration_timestamp_ms),
-            latLng: {lat: pokemon.latitude, lng: pokemon.longitude},
+            encounterID: encounter.encounter_id,
+            pokemonID: encounter.pokemon_id,
+            spawnPointID: encounter.spawn_point_id,
+            expirationTimestampMs: encounter.expiration_timestamp_ms,
+            latLng: {lat: encounter.latitude, lng: encounter.longitude},
           };
         });
         delete mapSummary.catchable_pokemons;
