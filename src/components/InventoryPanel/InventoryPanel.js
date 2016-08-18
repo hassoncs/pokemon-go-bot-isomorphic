@@ -53,7 +53,7 @@ export default class InventoryPanel extends Component {
             {sortedPokemons.map((pokemon) => (
               <div
                 className={styles.pokemonRow}
-                key={`${pokemon.id.low}${pokemon.id.high}`}
+                key={pokemon.id}
               >
                 <div className={styles.pokemonIcon}>
                   <PokemonIcon pokemonIndex={pokemon.pokemonIndex} />
