@@ -114,6 +114,8 @@ export default class InventoryWorker extends TickWorker {
       .catch((e) => {
         console.log('Something went wrong in InventoryWorker!'.red);
         console.log(e);
+        console.log(e.stack);
+        throw e;
       });
   }
 
@@ -474,7 +476,10 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
 
     return client.levelUpRewards(player.level)
       .then(response => {
-        const localItems = utils.toLocalItems(response.item_awarded);
+        console.log('client.levelUpRewards response');
+        console.log(response);
+
+        const localItems = utils.toLocalItems(response.item_awarded || []);
         logUtils.logItems(localItems, 'white');
 
         localItems.forEach(item => {
