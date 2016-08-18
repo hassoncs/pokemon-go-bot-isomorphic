@@ -30,7 +30,7 @@ export default class InventoryWorker extends TickWorker {
 
   getConfig() {
     return {
-      actEvery: 30 * 1000, // 30 seconds
+      actEvery: 60 * 1000,
     };
   }
 
@@ -107,6 +107,7 @@ export default class InventoryWorker extends TickWorker {
       .then(transferPokemonPromise)
       .then(hatchEggsPromise)
       .then(this.incubateEggs)
+      .then(this.checkForLevelUp)
       .then(() => {
         console.log('Done recycling items and evolving and transferring pokemon');
       })
@@ -251,7 +252,7 @@ export default class InventoryWorker extends TickWorker {
       const item = items[0];
       if (item.item_id !== 301) return console.log(`Skipping, not an egg`);
 
-      const expireLong = new Long(item.expire_ms.low, item.expire_ms.high, item.expire_ms.unsigned);
+      const expireLong = item.expire_ms;
       const expirationDate = new Date(expireLong.toNumber());
       const active = Date.now() <= expirationDate.getTime();
       if (active) appliedItems.push({...item, active});
@@ -321,7 +322,7 @@ export default class InventoryWorker extends TickWorker {
   hasActiveLuckyEgg() {
     const {state} = this;
     return some(state.inventory.appliedItems, (item) => {
-      const expireLong = new Long(item.expire_ms.low, item.expire_ms.high, item.expire_ms.unsigned);
+      const expireLong = item.expire_ms;
       const expirationDate = new Date(expireLong.toNumber());
       return Date.now() <= expirationDate.getTime();
     });
@@ -332,9 +333,17 @@ export default class InventoryWorker extends TickWorker {
     const playerData = inventory.player;
     const nextLevelXP = playerData.next_level_xp;
     const experience = playerData.experience;
+    const previousLevel = ((state.inventory || {}).player || {}).level || 1;
+
+    const leveledUp = (playerData.level > previousLevel);
+    if (leveledUp) {
+      console.log(`You leveled up! You are now level ${playerData.level}!`.toString().green);
+    }
+
     const player = {
       experience,
       nextLevelXP,
+      leveledUp,
       level: playerData.level,
       kmWalked: playerData.km_walked,
     };
@@ -457,6 +466,24 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
     });
   }
 
+  checkForLevelUp() {
+    const {client,state} = this;
+    const {player} = state.inventory;
+    if (!player.leveledUp) return Promise.resolve();
+    player.leveledUp = false;
+
+    return client.levelUpRewards(player.level)
+      .then(response => {
+        const localItems = utils.toLocalItems(response.item_awarded);
+        logUtils.logItems(localItems, 'white');
+
+        localItems.forEach(item => {
+          utils.deltaItem(item.id, item.count, state.inventory);
+        });
+        return Promise.resolve();
+      });
+  }
+
   incubateEggs() {
     const {client,state} = this;
     return new Promise(resolve => {
@@ -484,14 +511,14 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
         const pokemonID = allEggIDs.shift();
         incubator.beingUsed = true;
         incubator.pokemonID = pokemonID;
-        console.log(`Putting egg ${pokemonID.toNumber()} in incubator ${incubator.id}`);
+        console.log(`Putting egg ${pokemonID} in incubator ${incubator.id}`);
 
         client.useItemEggIncubator(incubator.id, pokemonID)
           .then(response => {
             if (response.result === 1) {
-              console.log(`Put egg ${pokemonID.toNumber()} in incubator ${incubator.id}`.toString().green);
+              console.log(`Put egg ${pokemonID} in incubator ${incubator.id}`.toString().green);
             } else {
-              console.log(`Failed to put egg ${pokemonID.toNumber()} in incubator ${incubator.id}`.toString().red);
+              console.log(`Failed to put egg ${pokemonID} in incubator ${incubator.id}`.toString().red);
             }
             return cb();
           });

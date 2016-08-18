@@ -148,4 +148,8 @@ export default class PogoClient {
   useItemEggIncubator() {
     return this.delegate('useItemEggIncubator', arguments);
   }
+
+  levelUpRewards() {
+    return this.delegate('levelUpRewards', arguments);
+  }
 }
