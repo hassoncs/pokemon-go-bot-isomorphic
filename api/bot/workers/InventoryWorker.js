@@ -280,7 +280,7 @@ export default class InventoryWorker extends TickWorker {
           target_km_walked,
           uses_remaining
           } = incubator;
-        const beingUsed = (pokemon_id.toNumber() !== 0);
+        const beingUsed = !!pokemon_id;
         let percentDone = 0;
         if (beingUsed) {
           const distanceFromStartKm = kmWalked - start_km_walked;
@@ -304,11 +304,11 @@ export default class InventoryWorker extends TickWorker {
     });
 
     const incubators = state.inventory.eggIncubators;
-    const usedIncubators = incubators.filter(incubator => incubator.pokemonID.toNumber() !== 0);
+    const usedIncubators = incubators.filter(incubator => !!incubator.pokemonID);
     console.log(`${incubators.length} egg incubators, ${usedIncubators.length} are in use.`);
     incubators.forEach((incubator, i) => {
       const {usesRemaining, percentDone, pokemonID} = incubator;
-      const beingUsed = (pokemonID.toNumber() !== 0);
+      const beingUsed = !!incubator.pokemonID;
       let useString = `Unused.`;
       if (beingUsed) {
         const percentDoneStr = (percentDone * 100).toFixed(1) + '%';
@@ -467,7 +467,7 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
       let allEggIDs = state.inventory.eggs.map(egg => egg.id);
       eggIncubators.forEach(incubator => {
         if (incubator.beingUsed) {
-          allEggIDs = allEggIDs.filter(eggID => !eggID.equals(incubator.pokemonID));
+          allEggIDs = allEggIDs.filter(eggID => eggID === incubator.pokemonID);
         }
       });
 
