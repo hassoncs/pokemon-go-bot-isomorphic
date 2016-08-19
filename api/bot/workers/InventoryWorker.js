@@ -476,11 +476,8 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
 
     return client.levelUpRewards(player.level)
       .then(response => {
-        console.log('client.levelUpRewards response');
-        console.log(response);
-
-        const localItems = utils.toLocalItems(response.item_awarded || []);
-        logUtils.logItems(localItems, 'white');
+        const localItems = utils.toLocalItems(response.items_awarded || []);
+        logUtils.logItems(localItems, 'green');
 
         localItems.forEach(item => {
           utils.deltaItem(item.id, item.count, state.inventory);
