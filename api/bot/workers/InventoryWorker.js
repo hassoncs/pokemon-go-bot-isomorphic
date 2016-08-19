@@ -255,7 +255,7 @@ export default class InventoryWorker extends TickWorker {
       if (item.item_id !== 301) return console.log(`Skipping, not an egg`);
 
       const expireLong = item.expire_ms;
-      const expirationDate = new Date(expireLong.toNumber());
+      const expirationDate = new Date(expireLong);
       const active = Date.now() <= expirationDate.getTime();
       if (active) appliedItems.push({...item, active});
 
@@ -325,7 +325,7 @@ export default class InventoryWorker extends TickWorker {
     const {state} = this;
     return some(state.inventory.appliedItems, (item) => {
       const expireLong = item.expire_ms;
-      const expirationDate = new Date(expireLong.toNumber());
+      const expirationDate = new Date(expireLong);
       return Date.now() <= expirationDate.getTime();
     });
   }
