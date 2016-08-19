@@ -497,7 +497,7 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
       let allEggIDs = state.inventory.eggs.map(egg => egg.id);
       eggIncubators.forEach(incubator => {
         if (incubator.beingUsed) {
-          allEggIDs = allEggIDs.filter(eggID => eggID === incubator.pokemonID);
+          allEggIDs = allEggIDs.filter(eggID => eggID !== incubator.pokemonID);
         }
       });
 
