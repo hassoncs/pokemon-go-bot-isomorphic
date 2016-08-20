@@ -1,6 +1,6 @@
 import pokemonList from '../data/pokemon';
 import Pokemon from '../models/Pokemon';
-import Item from '../../models/Item';
+import Item from '../models/Item';
 
 export default {
   toLocalItems(remoteItems) {

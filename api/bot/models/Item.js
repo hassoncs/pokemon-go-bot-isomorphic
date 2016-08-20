@@ -1,9 +1,9 @@
-import pokemonList from '../bot/data/pokemon';
+import pokemonList from '../data/pokemon';
 import extend from 'lodash/extend';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 import groupBy from 'lodash/groupBy';
-import itemData from '../bot/data/itemData';
+import itemData from '../data/itemData';
 
 const itemDataByItemId = groupBy(itemData, 'id');
 
