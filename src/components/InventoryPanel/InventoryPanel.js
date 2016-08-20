@@ -4,7 +4,7 @@ import {Link} from 'react-router';
 import sortBy from 'lodash/sortBy';
 import { asyncConnect } from 'redux-async-connect';
 import PokemonIcon from 'components/PokemonIcon/PokemonIcon';
-import Pokemon from '../../../api/models/Pokemon';
+import Pokemon from '../../../api/bot/models/Pokemon';
 
 const styles = require('./InventoryPanel.scss');
 

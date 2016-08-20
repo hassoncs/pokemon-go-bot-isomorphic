@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import Pokemon from '../models/Pokemon';
+import Pokemon from '../bot/models/Pokemon';
 import PokemonPruner from '../bot/utils/PokemonPruner';
 import inventoryData from './inventory-fixture';
 
