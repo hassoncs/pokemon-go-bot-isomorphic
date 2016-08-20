@@ -100,14 +100,13 @@ export default class InventoryWorker extends TickWorker {
     }
 
     // Check if we should throw anything away..
-    return recycleItemsPromise()
+    return this.checkForLevelUp()
       .bind(this)
+      .then(recycleItemsPromise)
       .then(evolvePokemonPromise)
-      .delay(3000)
       .then(transferPokemonPromise)
       .then(hatchEggsPromise)
       .then(this.incubateEggs)
-      .then(this.checkForLevelUp)
       .then(() => {
         console.log('Done recycling items and evolving and transferring pokemon');
       })
