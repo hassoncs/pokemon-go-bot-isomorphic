@@ -6,6 +6,7 @@ import logUtils from '../utils/logUtils';
 import InventoryPruner from '../utils/InventoryPruner';
 import async from 'async';
 import Promise from 'bluebird';
+import Pokemon from "../models/Pokemon";
 
 // Wait time after encountering the pokemon before you can catch them
 const pauseDurationBeforeCatching = 7000;
@@ -65,7 +66,7 @@ export default class PokemonCatchingWorker extends TickWorker {
         const probabilities = capture_probability.capture_probability;
         const wildPokemon = encounterResponse.wild_pokemon;
         const remotePokemon = wildPokemon.pokemon_data;
-        const pokemon = utils.toLocalPokemon(remotePokemon);
+        const pokemon = Pokemon.fromRemotePokemon(remotePokemon);
 
         state.encounter.pokemon = pokemon;
         state.encounter.probabilities = probabilities;

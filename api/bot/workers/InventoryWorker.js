@@ -12,6 +12,7 @@ import jsonfile from 'jsonfile';
 import Long from 'long';
 import Promise from 'bluebird';
 import levelXP from '../data/levelXP';
+import Pokemon from "../models/Pokemon";
 const env = require('../../../env');
 
 const delayBetweenItems = 3000;
@@ -198,9 +199,7 @@ export default class InventoryWorker extends TickWorker {
   processPokemon(inventory) {
     const {state} = this;
     const pokemons = inventory.pokemon;
-    const localPokemons = pokemons.map((remotePokemon) => {
-      return utils.toLocalPokemon(remotePokemon);
-    });
+    const localPokemons = pokemons.map(Pokemon.fromRemotePokemon);
     const localPokemonNoEggs = localPokemons.filter(p => !p.isEgg);
     const localPokemonEggs = localPokemons.filter(p => p.isEgg);
 
@@ -404,7 +403,7 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
         client.evolvePokemon(pokemon.id)
           .then(response => {
             if (response.result === 1) {
-              const newPokemonData = utils.toLocalPokemon(response.evolved_pokemon_data);
+              const newPokemonData = Pokemon.fromRemotePokemon(response.evolved_pokemon_data);
               console.log(`Evolved ${logUtils.getPokemonNameString(pokemon)} to ${logUtils.getPokemonNameString(newPokemonData)}`.toString().green);
               console.log(`Got ${response.experience_awarded.toString().green} xp and ${response.candy_awarded.toString().green} candy`);
             } else {
