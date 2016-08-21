@@ -28,20 +28,20 @@ const movement = extend({
   //   lng: -87.627146
   // },
   // Home
-  // currentLatLng: {
-  //  lat: 37.758735,
-  //  lng: -122.403586
-  // },
+  currentLatLng: {
+   lat: 37.758735,
+   lng: -122.403586
+  },
   // Pier 39
   //currentLatLng: {
   // lat: 37.808836,
   // lng: -122.410013
   //},
   // Central Park
-  currentLatLng: {
-   lat: 40.776910,
-   lng: -73.969500
-  },
+  // currentLatLng: {
+  //  lat: 40.776910,
+  //  lng: -73.969500
+  // },
   targetLatLng: null,
 }, prevState && prevState.movement, {
   // must be < 20kmph to hatch eggs?

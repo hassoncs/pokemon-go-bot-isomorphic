@@ -8,6 +8,13 @@ import itemData from '../data/itemData';
 const itemDataByItemId = groupBy(itemData, 'id');
 
 export default class Item {
+  static fromRemoteItem(remoteItem) {
+    return new Item({
+      id: remoteItem.item_id,
+      count: remoteItem.count || remoteItem.item_count || 0,
+    });
+  }
+
   constructor(data) {
     const itemData = itemDataByItemId[data.id];
     extend(this, {

@@ -9,6 +9,7 @@ import {
   getLatLngAlong,
   randomLatLng,
 } from '../utils/geo';
+import Item from "../models/Item";
 
 const pokestopUsageRadius = 5;
 const waitBeforeSpinningPokestop = 3000;
@@ -86,7 +87,7 @@ export default class PositionUpdateWorker extends TickWorker {
           if (searchDetails.result === 4) console.log(`Pokestop search successful, but inventory is full`.toString().green);
 
           // console.log(`searchDetails ${JSON.stringify(searchDetails.items_awarded)}`);
-          const localItems = utils.toLocalItems(searchDetails.items_awarded);
+          const localItems = searchDetails.items_awarded.map(Item.fromRemoteItem);
           console.log(`  ${xp} xp`.toString().green);
           logUtils.logItems(localItems, 'green');
 

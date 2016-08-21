@@ -2,16 +2,6 @@ import pokemonList from '../data/pokemon';
 import Item from '../models/Item';
 
 export default {
-  toLocalItems(remoteItems) {
-    const items = remoteItems.map(item => {
-      return new Item({
-        id: item.item_id,
-        count: item.count || item.item_count || 0,
-      });
-    });
-    return items;
-  },
-
   getPokedexByPokemonIndex(pokemonIndex) {
     return pokemonList[pokemonIndex];
   },

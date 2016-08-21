@@ -13,6 +13,7 @@ import Long from 'long';
 import Promise from 'bluebird';
 import levelXP from '../data/levelXP';
 import Pokemon from "../models/Pokemon";
+import Item from "../models/Item";
 const env = require('../../../env');
 
 const delayBetweenItems = 3000;
@@ -162,7 +163,7 @@ export default class InventoryWorker extends TickWorker {
 
   processItems(inventory) {
     const {state} = this;
-    const items = utils.toLocalItems(inventory.items);
+    const items = inventory.items.map(Item.fromRemoteItem);
     logUtils.logItems(items);
 
     const itemsById = {};
@@ -474,7 +475,7 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
 
     return client.levelUpRewards(player.level)
       .then(response => {
-        const localItems = utils.toLocalItems(response.items_awarded || []);
+        const localItems = (response.items_awarded || []).map(Item.fromRemoteItem);
         logUtils.logItems(localItems, 'green');
 
         localItems.forEach(item => {
