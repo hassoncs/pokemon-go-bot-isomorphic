@@ -1,4 +1,3 @@
-import pokemonList from '../data/pokemon';
 import extend from 'lodash/extend';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
