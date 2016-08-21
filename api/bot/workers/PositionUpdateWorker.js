@@ -2,7 +2,6 @@ import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
 import logUtils from '../utils/logUtils';
-import utils from '../utils/utils';
 
 import {
   distanceBetweenLatLngs,
@@ -91,9 +90,7 @@ export default class PositionUpdateWorker extends TickWorker {
           console.log(`  ${xp} xp`.toString().green);
           logUtils.logItems(localItems, 'green');
 
-          localItems.forEach(item => {
-            utils.deltaItem(item.id, item.count, state.inventory);
-          });
+          state.inventory.deltaItems(localItems);
 
           const last = {xp, items: localItems};
           state.target.last = last;

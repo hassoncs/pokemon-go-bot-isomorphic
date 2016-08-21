@@ -1,7 +1,6 @@
 import TickWorker from './TickWorker';
 import pogobuf from 'pogobuf';
 import POGOProtos from 'node-pogo-protos';
-import utils from '../utils/utils';
 import logUtils from '../utils/logUtils';
 import InventoryPruner from '../utils/InventoryPruner';
 import async from 'async';
@@ -100,7 +99,7 @@ export default class PokemonCatchingWorker extends TickWorker {
               console.log('Out of pokeballs! Skipping catching.'.red);
               return Promise.resolve();
             }
-            utils.deltaItem(pokeballItem.id, -1, state.inventory);
+            state.inventory.deltaItem(pokeballItem.id, -1);
             return client.catchPokemon(
               encounterID,
               pokeballItem.id,

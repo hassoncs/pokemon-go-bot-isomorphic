@@ -1,5 +1,4 @@
 import TickWorker from './TickWorker';
-import utils from '../utils/utils';
 import logUtils from '../utils/logUtils';
 import groupBy from 'lodash/groupBy';
 import some from 'lodash/some';
@@ -128,7 +127,7 @@ export default class InventoryWorker extends TickWorker {
   useLuckyEgg() {
     const {client, state} = this;
     return new Promise((resolve) => {
-      utils.deltaItem(luckyEggItemId, -1, state.inventory);
+      state.inventory.deltaItem(luckyEggItemId, -1);
       client.useItemXPBoost(luckyEggItemId)
         .then(response => {
           if (response.result === 1) {
@@ -259,10 +258,7 @@ export default class InventoryWorker extends TickWorker {
       .then(response => {
         const localItems = (response.items_awarded || []).map(Item.fromRemoteItem);
         logUtils.logItems(localItems, 'green');
-
-        localItems.forEach(item => {
-          utils.deltaItem(item.id, item.count, state.inventory);
-        });
+        state.inventory.deltaItems(localItems);
         return Promise.resolve();
       });
   }

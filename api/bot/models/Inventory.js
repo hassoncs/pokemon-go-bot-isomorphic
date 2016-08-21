@@ -215,4 +215,23 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
       return Date.now() <= expirationDate.getTime();
     });
   }
+
+  deltaItem(itemId, delta) {
+    const item = this.itemsById[itemId];
+    if (!item) {
+      this.itemsById[itemId] = new Item({
+        id: itemId,
+        count: delta,
+      });
+    } else {
+      item.count = Math.max(0, item.count + delta);
+    }
+    //return console.log(['New item count', item.name, item.count]);
+  }
+
+  deltaItems(items) {
+    items.forEach(item => {
+      this.deltaItem(item.id, item.count);
+    });
+  }
 }
