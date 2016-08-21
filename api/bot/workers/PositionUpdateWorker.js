@@ -1,6 +1,4 @@
 import TickWorker from './TickWorker';
-import pogobuf from 'pogobuf';
-import POGOProtos from 'node-pogo-protos';
 import logUtils from '../utils/logUtils';
 
 import {

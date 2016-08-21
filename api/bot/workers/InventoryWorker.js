@@ -1,7 +1,6 @@
 import TickWorker from './TickWorker';
 import logUtils from '../utils/logUtils';
 import groupBy from 'lodash/groupBy';
-import some from 'lodash/some';
 import InventoryPruner from '../utils/InventoryPruner';
 import PokemonPruner from '../utils/PokemonPruner';
 import async from 'async';
@@ -13,8 +12,7 @@ import Inventory from "../models/Inventory";
 const env = require('../../../env');
 
 const delayBetweenItems = 3000;
-// const delayBetweenEvolves = 20000;
-const delayBetweenEvolves = 5000;
+const delayBetweenEvolves = 5000; // Should be at least 20000
 const delayBetweenTransfers = 3000;
 
 const luckyEggItemId = 301;

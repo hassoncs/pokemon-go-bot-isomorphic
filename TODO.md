@@ -3,7 +3,7 @@ Make sure an encounter isn't expired before trying to catch it
 Hourly summaries (pokemon caught / released, etc)
   Print XP per hour, Pokemon per hour, time til next level
 Use google direction api to follow roads
-Check for level up  
+  
 Way better Web UI
 
 === MAYBE
@@ -13,6 +13,7 @@ Ways to ignore or prefer pokemon over others
 
 === DONE
 
+Check for level up and get rewards
 Use lucky egg before evolving
 Evolve in batches of 60-90?
 Release pokemon for candy
