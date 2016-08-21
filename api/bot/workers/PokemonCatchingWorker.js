@@ -35,7 +35,7 @@ export default class PokemonCatchingWorker extends TickWorker {
 
     this.bot.pauseUntil(new Promise(resolve => {
       async.eachSeries(encounters, (encounter, cb) => {
-        return this.encounterPokemon(encounter).then(cb);
+        return this.encounterPokemon(encounter).then(cb, cb);
       }, resolve);
     }));
   }
@@ -51,30 +51,53 @@ export default class PokemonCatchingWorker extends TickWorker {
         // console.log(`encounterResponse`);
         // console.log(JSON.stringify(encounterResponse));
         state.encounter = {
+          encounter,
           encounterResponse
         };
 
         if (encounterResponse.status !== 1) {
           console.log(`Failed to encounter the Pokemon :(`.toString().red);
-          return Promise.resolve();
+          return Promise.reject();
         }
 
         const {capture_probability} = encounterResponse;
         const probabilities = capture_probability.capture_probability;
         const wildPokemon = encounterResponse.wild_pokemon;
         const remotePokemon = wildPokemon.pokemon_data;
-        const pokemon = Pokemon.fromRemotePokemon(remotePokemon);
+        data.pokemon = Pokemon.fromRemotePokemon(remotePokemon);
 
-        state.encounter.pokemon = pokemon;
+        state.encounter.pokemon = data.pokemon;
         state.encounter.probabilities = probabilities;
         data.encounterResponse = encounterResponse;
-        console.log(`Catching ${logUtils.getPokemonNameString(pokemon)}...`);
-        console.log(`Probs ${probabilities.map(p => (p * 100).toFixed(0)).join('%, ')}%`);
+        console.log(`Catching ${logUtils.getPokemonNameString(data.pokemon)}...`);
+        console.log(`Chance of catching: ${probabilities.map(p => (p * 100).toFixed(0)).join('%, ')}%`);
         // console.log(['probabilities',probabilities]);
 
-        return this.catchPokemon(encounter, data.encounterResponse, pokemon);
+        return this.useBerry(state.encounter);
+      })
+      .then(() => {
+        return this.catchPokemon(encounter, data.encounterResponse, data.pokemon);
       })
       .then(Promise.delay.bind(this, 1500));
+  }
+
+  useBerry(encounterData) {
+    const {client, state} = this;
+    const {encounter, probabilities} = encounterData;
+    const {encounterID, spawnPointID} = encounter;
+    const berryItems = InventoryPruner.getItemsByType('berry', state.inventory.items);
+    if (berryItems.length === 0) return console.log('Skipping using berry, none available');
+
+    const itemID = berryItems[0].id;
+    console.log('Using Razz Berry');
+    return client.useItemCapture(itemID, encounterID, spawnPointID)
+      .then(({success, item_capture_mult}) => {
+        if (success) {
+          console.log(`Used Razz Berry`.toString().green);
+          console.log(`Chance of catching: ${probabilities.map(p => (p * 100 * item_capture_mult).toFixed(0)).join('%, ')}%`);
+        } else console.log('Failed to use Razz Berry'.red);
+        return Promise.resolve();
+      });
   }
 
   catchPokemon(encounter, encounterResponse, pokemon) {
