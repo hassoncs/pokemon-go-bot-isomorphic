@@ -133,8 +133,9 @@ export default class InventoryWorker extends TickWorker {
         .then(response => {
           if (response.result === 1) {
             console.log(`Used lucky egg!`.toString().green);
-            state.inventory.applied_items = [response.applied_items];
-            this.processAppliedItems(state.inventory);
+            state.inventory.processAppliedItems({
+              applied_items: [response.applied_items]
+            });
           } else {
             console.log(`Failed to use lucky egg`.toString().red);
           }

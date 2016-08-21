@@ -2,6 +2,7 @@ const pogobuf = require('pogobuf');
 const env = require('../../env');
 import jsonfile from 'jsonfile';
 import extend from 'lodash/extend';
+import Inventory from './models/Inventory';
 
 const STATE_FILE_NAME = '/tmp/pogobot-state.json';
 
@@ -29,8 +30,8 @@ const movement = extend({
   // },
   // Home
   currentLatLng: {
-   lat: 37.758735,
-   lng: -122.403586
+    lat: 37.758735,
+    lng: -122.403586
   },
   // Pier 39
   //currentLatLng: {
@@ -63,17 +64,8 @@ const mapSummary = extend({
   decimated_spawn_points: [],
 });
 
-const inventory = extend({
-  items: [],
-  itemsById: {},
-  player: extend({
-    experience: 0,
-    nextLevelXP: 0,
-    leveledUp: false,
-    level: 1,
-    kmWalked: 0,
-  }, prevState && prevState.inventory && prevState.inventory.player),
-}, prevState && prevState.inventory);
+const inventory = extend(new Inventory(),
+  prevState && prevState.inventory);
 
 const state = extend({
   target,

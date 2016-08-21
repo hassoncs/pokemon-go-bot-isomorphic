@@ -8,18 +8,19 @@ import Item from "./Item";
 export default class Inventory {
   static fromRemoteInventory(rawInventory) {
     const splitInventory = pogobuf.Utils.splitInventory(rawInventory);
-    return new Inventory(splitInventory);
-  }
 
-  constructor(splitInventory) {
-    this.rawInventory = splitInventory;
-    this.processUpgrades(this.rawInventory);
-    this.processPlayer(this.rawInventory);
-    this.processItems(this.rawInventory);
-    this.processPokemon(this.rawInventory);
-    this.processCandies(this.rawInventory);
-    this.processAppliedItems(this.rawInventory);
-    this.processEggIncubators(this.rawInventory);
+    const inventory = new Inventory(splitInventory);
+    inventory.rawInventory = splitInventory;
+
+    inventory.processUpgrades(splitInventory);
+    inventory.processPlayer(splitInventory);
+    inventory.processItems(splitInventory);
+    inventory.processPokemon(splitInventory);
+    inventory.processCandies(splitInventory);
+    inventory.processAppliedItems(splitInventory);
+    inventory.processEggIncubators(splitInventory);
+
+    return inventory;
   }
 
   processUpgrades(inventory) {
