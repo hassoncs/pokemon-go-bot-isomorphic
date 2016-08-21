@@ -38,13 +38,12 @@ export default class InventoryWorker extends TickWorker {
 
   act() {
     const {client} = this;
-    this.bot.pauseUntil(new Promise(resolve => {
-      return client.getInventory(0)
+    this.bot.pauseUntil(
+      client.getInventory(0)
         .bind(this)
         .then(this.processInventory)
         .then(this.performInventoryActions)
-        .then(resolve, resolve);
-    }));
+    );
   }
 
   performInventoryActions() {
@@ -281,7 +280,7 @@ export default class InventoryWorker extends TickWorker {
           start_km_walked,
           target_km_walked,
           uses_remaining
-          } = incubator;
+        } = incubator;
         const beingUsed = !!pokemon_id;
         let percentDone = 0;
         if (beingUsed) {
@@ -468,7 +467,7 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
   }
 
   checkForLevelUp() {
-    const {client,state} = this;
+    const {client, state} = this;
     const {player} = state.inventory;
     if (!player.leveledUp) return Promise.resolve();
     player.leveledUp = false;
@@ -486,7 +485,7 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
   }
 
   incubateEggs() {
-    const {client,state} = this;
+    const {client, state} = this;
     return new Promise(resolve => {
       const {eggIncubators} = state.inventory;
 
