@@ -117,7 +117,7 @@ export default class InventoryWorker extends TickWorker {
     const {state} = this;
 
     console.log('Inventory successful'.green);
-    state.inventory = Inventory.fromRemoteInventory(rawInventory);
+    state.inventory.process(rawInventory);
 
     return Promise.resolve();
   }

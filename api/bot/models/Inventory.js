@@ -8,20 +8,22 @@ import Item from "./Item";
 
 export default class Inventory {
   static fromRemoteInventory(rawInventory) {
+    const inventory = new Inventory();
+    inventory.process(rawInventory);
+    return inventory;
+  }
+
+  process(rawInventory) {
     const splitInventory = pogobuf.Utils.splitInventory(rawInventory);
 
-    const inventory = new Inventory(splitInventory);
-    inventory.rawInventory = splitInventory;
-
-    inventory.processUpgrades(splitInventory);
-    inventory.processPlayer(splitInventory);
-    inventory.processItems(splitInventory);
-    inventory.processPokemon(splitInventory);
-    inventory.processCandies(splitInventory);
-    inventory.processAppliedItems(splitInventory);
-    inventory.processEggIncubators(splitInventory);
-
-    return inventory;
+    this.rawInventory = splitInventory;
+    this.processUpgrades(splitInventory);
+    this.processPlayer(splitInventory);
+    this.processItems(splitInventory);
+    this.processPokemon(splitInventory);
+    this.processCandies(splitInventory);
+    this.processAppliedItems(splitInventory);
+    this.processEggIncubators(splitInventory);
   }
 
   processUpgrades(inventory) {
@@ -44,11 +46,11 @@ export default class Inventory {
     const playerData = inventory.player;
     const nextLevelXP = playerData.next_level_xp;
     const experience = playerData.experience;
-    const previousLevel = ((this || {}).player || {}).level || 1;
+    const previousLevel = (this.player || {}).level || 1;
 
     const leveledUp = (playerData.level > previousLevel);
     if (leveledUp) {
-      console.log(`You leveled up! You are now level ${playerData.level}!`.toString().green);
+      console.log(`Level up!! You are now level ${playerData.level}!`.toString().green);
     }
 
     const player = {
