@@ -1,5 +1,6 @@
 import pogobuf from 'pogobuf';
 import Pokemon from "./Pokemon";
+import some from 'lodash/some';
 import groupBy from 'lodash/groupBy';
 import logUtils from '../utils/logUtils';
 import levelXP from '../data/levelXP';
@@ -204,6 +205,14 @@ ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to nex
         useString = `Incubating ${pokemonID}, ${percentDoneStr} hatched`;
       }
       console.log(`${i}) ${usesRemaining} uses left. ${useString}`);
+    });
+  }
+
+  hasActiveLuckyEgg() {
+    return some(this.appliedItems, (item) => {
+      const expireLong = item.expire_ms;
+      const expirationDate = new Date(expireLong);
+      return Date.now() <= expirationDate.getTime();
     });
   }
 }

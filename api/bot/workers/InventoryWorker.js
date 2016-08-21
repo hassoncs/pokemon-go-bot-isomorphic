@@ -61,7 +61,7 @@ export default class InventoryWorker extends TickWorker {
     }
 
     const pokemonToEvolve = PokemonPruner.getPokemonToEvolve(state.inventory);
-    const activeLuckyEgg = this.hasActiveLuckyEgg();
+    const activeLuckyEgg = state.inventory.hasActiveLuckyEgg();
     console.log(`Could evolve ${pokemonToEvolve.length} pokemon`.toString().yellow);
 
     let evolvePokemonPromise = Promise.resolve;
@@ -141,15 +141,6 @@ export default class InventoryWorker extends TickWorker {
           }
           setTimeout(resolve, 3000);
         });
-    });
-  }
-
-  hasActiveLuckyEgg() {
-    const {state} = this;
-    return some(state.inventory.appliedItems, (item) => {
-      const expireLong = item.expire_ms;
-      const expirationDate = new Date(expireLong);
-      return Date.now() <= expirationDate.getTime();
     });
   }
 
