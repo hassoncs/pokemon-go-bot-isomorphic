@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import utils from './utils';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
 import sortBy from 'lodash/sortBy';
 import last from 'lodash/last';
+import Pokemon from "../models/Pokemon";
 
 class PokemonPruner {
   getPokemonToEvolve(inventory) {
@@ -13,7 +13,7 @@ class PokemonPruner {
     // Object.keys(candiesByIndex).forEach(familyID => {
     //   const candy = candiesByIndex[familyID];
     //   const pokemonIndex = +familyID - 1;
-    //   const pokedex = utils.getPokedexByPokemonIndex(pokemonIndex);
+    //   const pokedex = Pokemon.getPokedexByPokemonIndex(pokemonIndex);
     //   console.log(`#${pokemonIndex}) ${candy.count}x ${pokedex.Name} Candies`);
     // });
 

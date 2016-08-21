@@ -36,6 +36,10 @@ export default class Pokemon {
     });
   }
 
+  static getPokedexByPokemonIndex(pokemonIndex) {
+    return pokemonList[pokemonIndex];
+  }
+
   constructor(data) {
     extend(this, data);
     this.pokedex = pokemonList[this.pokemonIndex];
