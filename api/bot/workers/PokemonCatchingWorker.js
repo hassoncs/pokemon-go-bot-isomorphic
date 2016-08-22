@@ -101,6 +101,8 @@ export default class PokemonCatchingWorker extends TickWorker {
     }
     const itemID = berryItems[0].id;
     console.log('Using Razz Berry');
+    state.inventory.deltaItem(itemID, -1);
+
     return client.useItemCapture(itemID, encounterID, spawnPointID)
       .then(({success, item_capture_mult}) => {
         if (success) {
