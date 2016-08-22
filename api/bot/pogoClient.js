@@ -24,7 +24,9 @@ export default class PogoClient {
             console.log(`PogoClientWrapper caught an error calling '${name}'!`.toString().red);
             console.error(JSON.stringify(error));
 
-            if (error.message === 'Status code 102 received from RPC') {
+            if (error.message === 'Status code 3 received from RPC') {
+              throw new Error('Stopping bot early, got status code 3 which means we did something wrong :('.toString().red);
+            } else if (error.message === 'Status code 102 received from RPC') {
               this.login().then(runTask);
               const areCallsWaiting = this.q.length() > 0;
               return setTimeout(onceCB, areCallsWaiting ? 3500 : 0);
