@@ -10,9 +10,11 @@ export default class StatsSummaryWorker extends TickWorker {
   }
 
   act() {
+    const pokemonPerHour = this.stats.pokemonPerHour.average;
     const avgXPPerHour = this.stats.xpPerHour.average;
 
-    console.log(`Averaging ${(avgXPPerHour).toFixed().green} xp per hour`);
+    console.log(`Averaging ${(avgXPPerHour).toFixed().green} xp per hour\
+ and ${(pokemonPerHour).toFixed().green} pokemon per hour`);
 
     if (!this.state.inventory.player) return;
     const {currentLevelXP, xpNeededForNextLevel} = this.state.inventory.player;

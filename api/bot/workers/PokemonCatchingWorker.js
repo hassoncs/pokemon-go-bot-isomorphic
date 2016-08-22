@@ -169,6 +169,7 @@ export default class PokemonCatchingWorker extends TickWorker {
             return sum;
           }, 0);
           this.stats.xpPerHour.logEvent(totalXP);
+          this.stats.pokemonPerHour.logEvent(1);
           console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
           return false;
         } else if (status === 2) {
