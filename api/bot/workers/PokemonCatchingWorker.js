@@ -46,6 +46,12 @@ export default class PokemonCatchingWorker extends TickWorker {
 
     const data = {};
     state.mapSummary.encounters = state.mapSummary.encounters.filter(p => p !== encounter);
+
+    if ((new Date(encounter.expirationTimestampMs)).getTime() < Date.now()) {
+      console.log('Skipping encounter, the pokemon has expired!'.yellow``);
+      return Promise.resolve();
+    }
+
     return client.encounter(encounterID, spawnPointID)
       .then(encounterResponse => {
         // console.log(`encounterResponse`);
@@ -86,8 +92,13 @@ export default class PokemonCatchingWorker extends TickWorker {
     const {encounter, probabilities} = encounterData;
     const {encounterID, spawnPointID} = encounter;
     const berryItems = InventoryPruner.getItemsByType('berry', state.inventory.items);
-    if (berryItems.length === 0) return console.log('Skipping using berry, none available');
-
+    if (probabilities[0] >= .85) {
+      console.log('Skipping using berry, catch chance already high.');
+      return Promise.resolve();
+    } else if (berryItems.length === 0) {
+      console.log('Skipping using berry, none available');
+      return Promise.resolve();
+    }
     const itemID = berryItems[0].id;
     console.log('Using Razz Berry');
     return client.useItemCapture(itemID, encounterID, spawnPointID)
