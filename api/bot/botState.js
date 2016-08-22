@@ -29,15 +29,20 @@ const movement = extend({
   //   lng: -87.627146
   // },
   // Home
-  currentLatLng: {
-    lat: 37.758735,
-    lng: -122.403586
-  },
+  // currentLatLng: {
+  //   lat: 37.758735,
+  //   lng: -122.403586
+  // },
   // Pier 39
   //currentLatLng: {
   // lat: 37.808836,
   // lng: -122.410013
   //},
+  // Golden Gate Park Corner
+  currentLatLng: {
+    lat: 37.769455,
+    lng: -122.510462
+  },
   // Central Park
   // currentLatLng: {
   //  lat: 40.776910,
