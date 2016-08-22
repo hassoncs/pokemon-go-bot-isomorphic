@@ -11,6 +11,10 @@ Collect level up reward items
 Add some some of FSM system to the bot?
 Ways to ignore or prefer pokemon over others
 
+
+=== BUGS
+Switching counts messes up the Level up detection
+
 === DONE
 
 Check for level up and get rewards
