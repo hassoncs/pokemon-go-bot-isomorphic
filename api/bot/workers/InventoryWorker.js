@@ -11,13 +11,9 @@ import Item from "../models/Item";
 import Inventory from "../models/Inventory";
 const env = require('../../../env');
 
-const delayBetweenItems = 3000;
-const delayBetweenEvolves = 5000; // Should be at least 20000
-const delayBetweenTransfers = 3000;
-
 const luckyEggItemId = 301;
-const startEvolvingWhenOverEvolvableCount = 90;
-const maxPokemontCountBeforeTransfer = .75;
+const luckyEggDuration = 30 * 60 * 1000; // 30 minutes
+const startEvolvingWhenOverEvolvableCount = Math.floor(luckyEggDuration / env.delayBetweenEvolves);
 
 export default class InventoryWorker extends TickWorker {
   constructor({state, client, stats, bot}) {
@@ -83,7 +79,7 @@ export default class InventoryWorker extends TickWorker {
 
     let transferPokemonPromise = Promise.resolve;
     const pokemonFullnessPercent = state.inventory.pokemonSummary.count / state.inventory.maxPokemonCount;
-    const hasTooManyPokemon = (pokemonFullnessPercent >= maxPokemontCountBeforeTransfer);
+    const hasTooManyPokemon = (pokemonFullnessPercent >= env.maxPokemonPercentFullBeforeTransfer);
     const totallyFullOfPokemon = pokemonFullnessPercent >= 1;
     if (totallyFullOfPokemon || hasTooManyPokemon && !activeLuckyEgg) {
       transferPokemonPromise = this.doPokemonTransferring.bind(this);
@@ -166,7 +162,7 @@ export default class InventoryWorker extends TickWorker {
             } else {
               console.log(`Failed to recyle ${count} ${name}`.toString().red);
             }
-            setTimeout(cb, delayBetweenItems);
+            setTimeout(cb, env.delayBetweenRecyclingItems);
           });
       }, resolve);
     });
@@ -190,7 +186,7 @@ export default class InventoryWorker extends TickWorker {
             } else {
               console.log(`Failed to evolve ${logUtils.getPokemonNameString(pokemon)}`.toString().red);
             }
-            setTimeout(cb, delayBetweenEvolves);
+            setTimeout(cb, env.delayBetweenEvolves);
           });
       }, resolve);
     });
@@ -217,7 +213,7 @@ export default class InventoryWorker extends TickWorker {
             } else {
               console.log(`Failed to transfer ${logUtils.getPokemonNameString(pokemon)}`.toString().red);
             }
-            setTimeout(cb, delayBetweenTransfers);
+            setTimeout(cb, env.delayBetweenTransfers);
           });
       }, resolve);
     });
