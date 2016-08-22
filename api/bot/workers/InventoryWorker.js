@@ -20,8 +20,8 @@ const startEvolvingWhenOverEvolvableCount = 90;
 const maxPokemontCountBeforeTransfer = .75;
 
 export default class InventoryWorker extends TickWorker {
-  constructor({state, client, bot}) {
-    super({state, client, bot});
+  constructor({state, client, stats, bot}) {
+    super({state, client, stats, bot});
   }
 
   getConfig() {
@@ -186,6 +186,7 @@ export default class InventoryWorker extends TickWorker {
               const newPokemonData = Pokemon.fromRemotePokemon(response.evolved_pokemon_data);
               console.log(`Evolved ${logUtils.getPokemonNameString(pokemon)} to ${logUtils.getPokemonNameString(newPokemonData)}`.toString().green);
               console.log(`Got ${response.experience_awarded.toString().green} xp and ${response.candy_awarded.toString().green} candy`);
+              this.stats.xpPerHour.logEvent(+response.experience_awarded);
             } else {
               console.log(`Failed to evolve ${logUtils.getPokemonNameString(pokemon)}`.toString().red);
             }
@@ -227,16 +228,15 @@ export default class InventoryWorker extends TickWorker {
     return new Promise(resolve => {
       client.getHatchedEggs()
         .then(response => {
-          console.log('Hatched Eggs Response:');
-          console.log(response);
-
           if (response.success) {
             console.log(`Successfully checked for hatched eggs`.toString().green);
             const pokemonIDs = response.pokemon_id;
             const candyAwarded = response.candy_awarded;
             const experienceAwarded = response.experience_awarded;
             const stardustAwarded = response.stardust_awarded;
-            console.log(`${pokemonIDs.length.toString().green} hatched.`);
+            this.stats.xpPerHour.logEvent(+experienceAwarded[0]);
+            console.log(`${pokemonIDs.length.toString().green} eggs hatched.`);
+            console.log(`Got ${experienceAwarded[0].toString().green} xp, ${candyAwarded[0].toString().green} candies, and ${stardustAwarded[0].toString().green} stardust`);
           } else {
             console.log(`Failed to check for hatched eggs`.toString().red);
           }

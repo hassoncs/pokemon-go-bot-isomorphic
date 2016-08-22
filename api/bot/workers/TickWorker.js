@@ -6,8 +6,9 @@ const defaultConfig = {
 };
 
 export default class TickWorker {
-  constructor({state, client, bot}) {
+  constructor({state, client, stats, bot}) {
     this.bot = bot;
+    this.stats = stats;
     this.state = state;
     this.client = client;
     this._pausedTimeMs = 0;

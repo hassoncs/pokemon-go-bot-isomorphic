@@ -53,20 +53,21 @@ export default class Inventory {
       console.log(`Level up!! You are now level ${playerData.level}!`.toString().green);
     }
 
+    const levelIndex = playerData.level - 1;
+    const totalXPForCurrentLevel = levelXP[levelIndex].xpTotal;
+    const currentLevelXP = experience - totalXPForCurrentLevel;
+    const xpNeededForNextLevel = nextLevelXP - totalXPForCurrentLevel;
+
     const player = {
       experience,
       nextLevelXP,
       leveledUp,
+      currentLevelXP,
+      xpNeededForNextLevel,
       level: playerData.level,
       kmWalked: playerData.km_walked,
     };
     this.player = player;
-
-    const levelIndex = playerData.level - 1;
-    const levelData = levelXP[levelIndex];
-    const totalXPForCurrentLevel = levelData.xpTotal;
-    const currentLevelXP = experience - totalXPForCurrentLevel;
-    const xpNeededForNextLevel = nextLevelXP - totalXPForCurrentLevel;
 
     console.log(`${('Level ' + playerData.level.toFixed(0)).yellow}, \
 ${((currentLevelXP / xpNeededForNextLevel * 100).toFixed(1) + '%').green} to next level! (${currentLevelXP}/${xpNeededForNextLevel})`);

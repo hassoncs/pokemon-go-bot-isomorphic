@@ -88,6 +88,7 @@ export default class PositionUpdateWorker extends TickWorker {
           console.log(`  ${xp} xp`.toString().green);
           logUtils.logItems(localItems, 'green');
 
+          this.stats.xpPerHour.logEvent(+xp);
           state.inventory.deltaItems(localItems);
 
           const last = {xp, items: localItems};

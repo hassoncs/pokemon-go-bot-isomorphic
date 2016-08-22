@@ -1,6 +1,7 @@
 const pogobuf = require('pogobuf');
 const env = require('../../env');
 const colors = require('colors/safe');
+import Statistics from './utils/Statistics';
 import StateSaveWorker from './workers/StateSaveWorker';
 import MapSummaryWorker from './workers/MapSummaryWorker';
 import TargetObjectiveWorker from './workers/PokestopTargetingWorker';
@@ -8,6 +9,7 @@ import PlayerUpdateWorker from './workers/PlayerUpdateWorker';
 import PositionUpdateWorker from './workers/PositionUpdateWorker';
 import InventoryWorker from './workers/InventoryWorker';
 import PokemonCatchingWorker from './workers/PokemonCatchingWorker';
+import StatsSummaryWorker from './workers/StatsSummaryWorker';
 import PogoClient from './pogoClient';
 
 const TICK_INTERVAL = 1000;
@@ -23,8 +25,13 @@ class Bot {
     console.log(colors.red('Starting bot.'));
     this._lastTickEpoch = Date.now();
 
+    const stats = {
+      xpPerHour: new Statistics(),
+      pokemonPerHour: new Statistics(),
+    };
+
     const {client, state} = this;
-    this.params = {client, state, bot: this};
+    this.params = {client, state, stats, bot: this};
     this._workers = [
       new PlayerUpdateWorker(this.params),
       new PositionUpdateWorker(this.params),
@@ -33,6 +40,7 @@ class Bot {
       new TargetObjectiveWorker(this.params),
       new InventoryWorker(this.params),
       new PokemonCatchingWorker(this.params),
+      new StatsSummaryWorker(this.params),
     ];
     setTimeout(() => this.tick(), TICK_INTERVAL);
   }

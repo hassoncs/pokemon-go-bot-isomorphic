@@ -9,8 +9,8 @@ import Pokemon from "../models/Pokemon";
 const pauseDurationBeforeCatching = 7000;
 
 export default class PokemonCatchingWorker extends TickWorker {
-  constructor({state, client, bot}) {
-    super({state, client, bot});
+  constructor({state, client, stats, bot}) {
+    super({state, client, stats, bot});
     this._pausedTimeMs = 5000;
   }
 
@@ -48,7 +48,7 @@ export default class PokemonCatchingWorker extends TickWorker {
     state.mapSummary.encounters = state.mapSummary.encounters.filter(p => p !== encounter);
 
     if ((new Date(encounter.expirationTimestampMs)).getTime() < Date.now()) {
-      console.log('Skipping encounter, the pokemon has expired!'.yellow``);
+      console.log('Skipping encounter, the pokemon has expired!'.toString().yellow);
       return Promise.resolve();
     }
 
@@ -168,6 +168,7 @@ export default class PokemonCatchingWorker extends TickWorker {
             sum += xp;
             return sum;
           }, 0);
+          this.stats.xpPerHour.logEvent(totalXP);
           console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
           return false;
         } else if (status === 2) {
