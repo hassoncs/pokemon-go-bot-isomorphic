@@ -56,7 +56,7 @@ export default class PogoClient {
           const latLng = this.state.movement.currentLatLng;
 
           this.client.setAuthInfo(env.loginProvider, token);
-          this.client.setPosition(latLng.lat, latLng.lng);
+          this.setPosition(latLng.lat, latLng.lng);
           return this.client.init();
         })
         .then(() => {
@@ -84,7 +84,7 @@ export default class PogoClient {
   }
 
   setPosition(lat, lng) {
-    this.client.setPosition(lat, lng);
+    this.client.setPosition(lat, lng, 8);
   }
 
   init() {
