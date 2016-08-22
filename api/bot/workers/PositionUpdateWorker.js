@@ -1,5 +1,6 @@
 import TickWorker from './TickWorker';
 import logUtils from '../utils/logUtils';
+const env = require('../../../env');
 
 import {
   distanceBetweenLatLngs,
@@ -8,7 +9,7 @@ import {
 } from '../utils/geo';
 import Item from "../models/Item";
 
-const pokestopUsageRadius = 5;
+const pokestopUsageRadius = 10;
 const waitBeforeSpinningPokestop = 3000;
 
 export default class PositionUpdateWorker extends TickWorker {
@@ -21,12 +22,12 @@ export default class PositionUpdateWorker extends TickWorker {
   act() {
     const {state} = this;
     const {targetFortId} = state.target;
-    const {currentLatLng, targetLatLng, speedMps} = state.movement;
+    const {currentLatLng, targetLatLng} = state.movement;
 
     if (!targetFortId || !targetLatLng) return; // console.log('At target, not moving player.');
 
     const distanceToTarget = distanceBetweenLatLngs(currentLatLng, targetLatLng);
-    const timeTilTarget = distanceToTarget / speedMps;
+    const timeTilTarget = distanceToTarget / env.walkSpeedMetersPerSecond;
 
     state.target.distanceToTarget = distanceToTarget;
     state.target.timeTilTarget = timeTilTarget;
@@ -42,8 +43,8 @@ export default class PositionUpdateWorker extends TickWorker {
 
   moveTowardsFort() {
     const {state} = this;
-    const {currentLatLng, targetLatLng, speedMps} = state.movement;
-    const distTraveledMeters = speedMps * (this._elapsedTimeSinceActMs / 1000);
+    const {currentLatLng, targetLatLng} = state.movement;
+    const distTraveledMeters = env.walkSpeedMetersPerSecond * (this._elapsedTimeSinceActMs / 1000);
     const distanceMeters = Math.min(state.target.distanceToTarget, distTraveledMeters);
     const closerLatLng = getLatLngAlong(currentLatLng, targetLatLng, distanceMeters);
     state.movement.currentLatLng = closerLatLng;

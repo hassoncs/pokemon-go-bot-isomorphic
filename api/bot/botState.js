@@ -49,10 +49,7 @@ const movement = extend({
   //  lng: -73.969500
   // },
   targetLatLng: null,
-}, prevState && prevState.movement, {
-  // must be < 20kmph to hatch eggs?
-  speedMps: 3.75, // human speed is 1.4 - 2.5?
-});
+}, prevState && prevState.movement);
 
 const target = extend({
   fortsHistory: {},
