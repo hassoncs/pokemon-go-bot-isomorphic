@@ -4,6 +4,7 @@ import InventoryPruner from '../utils/InventoryPruner';
 import async from 'async';
 import Promise from 'bluebird';
 import Pokemon from "../models/Pokemon";
+import env from '../../../env';
 
 // Wait time after encountering the pokemon before you can catch them
 const pauseDurationBeforeCatching = 7000;
@@ -145,8 +146,8 @@ export default class PokemonCatchingWorker extends TickWorker {
             ).timeout(20000);
           })
           .then((response) => {
-            // console.log(`Got a catch response`);
-            // console.log(response);
+             //console.log(`Got a catch response`);
+             //console.log(response);
             catchReponse = response;
             cb(null);
             return null;
@@ -180,6 +181,9 @@ export default class PokemonCatchingWorker extends TickWorker {
         } else if (status === 3) {
           console.log(`Pokemon fled!`.toString().yellow);
           return false;
+        } else if (status === 4) {
+          console.log(`Missed on purpose, but trying again...`.toString().yellow);
+          return true;
         }
       }, resolve);
     });
@@ -188,24 +192,29 @@ export default class PokemonCatchingWorker extends TickWorker {
   getCatchOptions(encounter) {
     const spinModifier = 0 + Math.random() * 0.85;
     const normalizedReticleSize = 1.1 + Math.random() * 0.85;
-    const normalizedHitPosition = 1.0;
-    const pokeballItem = this.getPokeballItem(encounter);
+    let normalizedHitPosition = 1.0;
+
+    const hitPokemon = (Math.random() < env.hitPokemonPercent);
+    if (!hitPokemon) normalizedHitPosition = 0.0;
+
+    const pokeballItem = this.getPokeballItem(encounter, { forceWorst: !hitPokemon });
     const catchOptions = {
+      hitPokemon,
       spinModifier,
+      pokeballItem,
       normalizedReticleSize,
       normalizedHitPosition,
-      pokeballItem,
-      hitPokemon: true,
     };
-    console.log(`Using a ${pokeballItem.name} with spin ${catchOptions.spinModifier.toFixed(1)},\
+    console.log(`${hitPokemon ? 'Hitting' : 'Missing'} pokemon using ${pokeballItem.name} with spin ${catchOptions.spinModifier.toFixed(1)},\
  size: ${catchOptions.normalizedReticleSize.toFixed(2)}`);
     return catchOptions;
   }
 
-  getPokeballItem(encounter) {
+  getPokeballItem(encounter, {forceWorst} = {}) {
     const {state} = this;
     const ballItems = InventoryPruner.getItemsByType('ball', state.inventory.items);
-    if (encounter &&
+    if (!forceWorst &&
+      encounter &&
       encounter.probabilities &&
       encounter.probabilities[0] <= 0.5) ballItems.reverse();
 
