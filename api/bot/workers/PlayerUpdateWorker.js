@@ -3,11 +3,12 @@ import {
   distanceBetweenLatLngs,
   randomLatLng,
 } from '../utils/geo';
+import { getElevation } from '../utils/elevation';
 
 export default class PlayerUpdateWorker extends TickWorker {
   getConfig() {
     return {
-      actEvery: 5000,
+      actEvery: 10000,
     };
   }
 
@@ -19,10 +20,13 @@ export default class PlayerUpdateWorker extends TickWorker {
     const randomizedLatLng = randomLatLng(currentLatLng, randomMeters / 1000);
     state.movement.randomizedLatLng = randomizedLatLng;
 
-    client.setPosition(randomizedLatLng.lat, randomizedLatLng.lng);
-    client.playerUpdate(randomizedLatLng.lat, randomizedLatLng.lng)
-      .then(() => {
-        console.log(`Set player position: (${randomizedLatLng.lat.toFixed(3)},${randomizedLatLng.lng.toFixed(3)})`.toString().blue);
+    getElevation(randomizedLatLng.lat, randomizedLatLng.lng)
+      .then((elevation) => {
+        client.setPosition(randomizedLatLng.lat, randomizedLatLng.lng, elevation);
+        client.playerUpdate()
+          .then(() => {
+            console.log(`Set player position: (${randomizedLatLng.lat.toFixed(3)},${randomizedLatLng.lng.toFixed(3)}, ${elevation})`.toString().blue);
+          });
       });
   }
 }

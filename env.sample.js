@@ -9,4 +9,5 @@ module.exports = {
   delayBetweenTransfers: 3500,
   maxPokemonPercentFullBeforeTransfer: 0.75,
   walkSpeedMetersPerSecond: 2.4, // human speed is 1.4 - 2.5?
+  googleMapsAPIKey: '',
 };

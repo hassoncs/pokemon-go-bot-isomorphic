@@ -85,8 +85,8 @@ export default class PogoClient {
     }
   }
 
-  setPosition(lat, lng) {
-    this.client.setPosition(lat, lng, 8);
+  setPosition(lat, lng, elevation = 10) {
+    this.client.setPosition(lat, lng, elevation);
   }
 
   init() {
