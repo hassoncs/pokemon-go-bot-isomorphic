@@ -8,6 +8,7 @@ import env from '../../../env';
 
 // Wait time after encountering the pokemon before you can catch them
 const pauseDurationBeforeCatching = 7000;
+const xpForNewPokemon = 500;
 
 export default class PokemonCatchingWorker extends TickWorker {
   constructor({state, client, stats, bot}) {
@@ -117,6 +118,9 @@ export default class PokemonCatchingWorker extends TickWorker {
   catchPokemon(encounter, encounterResponse, pokemon) {
     const {client, state} = this;
     const {encounterID, spawnPointID} = encounter;
+    const catchingState = {
+      xpEarned: 0,
+    };
 
     return new Promise(resolve => {
       var catchReponse = null;
@@ -171,6 +175,7 @@ export default class PokemonCatchingWorker extends TickWorker {
             sum += xp;
             return sum;
           }, 0);
+          catchingState.xpEarned = totalXP;
           this.stats.xpPerHour.logEvent(totalXP);
           this.stats.pokemonPerHour.logEvent(1);
           console.log(`Got ${totalXP.toString().green} xp, ${capture_award.candy[0].toString().green} candies, and ${capture_award.stardust[0].toString().green} stardust`);
@@ -185,7 +190,12 @@ export default class PokemonCatchingWorker extends TickWorker {
           console.log(`Missed on purpose, but trying again...`.toString().yellow);
           return true;
         }
-      }, resolve);
+      }, () => {
+        const isNewPokemon = (catchingState.xpEarned >= xpForNewPokemon);
+        if (isNewPokemon) console.log('New Pokemon Found! Waiting for pokedex animation...'.toString().green);
+        const postCatchDelay = isNewPokemon ? 3500 : 0;
+        return Promise.delay(postCatchDelay).then(resolve);
+      });
     });
   }
 
