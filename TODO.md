@@ -1,22 +1,21 @@
-
-Make sure an encounter isn't expired before trying to catch it
-Hourly summaries (pokemon caught / released, etc)
-  Print XP per hour, Pokemon per hour, time til next level
 Use google direction api to follow roads
-  
-Way better Web UI
+Make way better Web UI
+Call getInventory with a diff timestamp
+Collect badges
+Equip badges?
 
 === MAYBE
-Collect level up reward items
-Add some some of FSM system to the bot?
-Ways to ignore or prefer pokemon over others
 
 
 === BUGS
 Switching counts messes up the Level up detection
 
 === DONE
-
+Use google elevation API to set realistic elevations
+Hourly summaries (pokemon caught / released, etc)
+  Print XP per hour, Pokemon per hour, time til next level
+Make sure an encounter isn't expired before trying to catch it
+Collect level up reward items
 Check for level up and get rewards
 Use lucky egg before evolving
 Evolve in batches of 60-90?
