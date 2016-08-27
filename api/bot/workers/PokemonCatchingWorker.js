@@ -200,12 +200,19 @@ export default class PokemonCatchingWorker extends TickWorker {
   }
 
   getCatchOptions(encounter) {
-    const spinModifier = 0 + Math.random() * 0.85;
-    const normalizedReticleSize = 1.1 + Math.random() * 0.85;
-    let normalizedHitPosition = 1.0;
+    let spinModifier = undefined;
+    let normalizedReticleSize = undefined;
+    let normalizedHitPosition = undefined;
 
-    const hitPokemon = (Math.random() < env.hitPokemonPercent);
-    if (!hitPokemon) normalizedHitPosition = 0.0;
+    let hitPokemon = (Math.random() < env.hitPokemonPercent);
+    if (hitPokemon) {
+      normalizedHitPosition = 1;
+      normalizedReticleSize = 1.1 + Math.random() * 0.85;
+      spinModifier = (Math.random() <= env.spinPokeballPercent) ? 1 : 0;
+    } else {
+      hitPokemon = undefined;
+      normalizedReticleSize = 1;
+    }
 
     const pokeballItem = this.getPokeballItem(encounter, { forceWorst: !hitPokemon });
     const catchOptions = {

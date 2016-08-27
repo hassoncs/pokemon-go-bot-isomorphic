@@ -4,6 +4,7 @@ module.exports = {
   password: '',
   maxTransferCP: 1200,
   hitPokemonPercent: 0.75,
+  spinPokeballPercent: 0.85,
   delayBetweenRecyclingItems: 3000,
   delayBetweenEvolves: 25000,
   delayBetweenTransfers: 3500,
