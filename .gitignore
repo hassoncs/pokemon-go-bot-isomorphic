@@ -7,3 +7,7 @@ webpack-stats.json
 npm-debug.log
 
 /env.js
+
+/debug.log.js
+
+/.http-mitm-proxy/
